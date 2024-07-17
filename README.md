@@ -8,4 +8,8 @@ As I made this followspot-system for my "Maturaarbeit", a final highschool proje
 
 Man direkte Befehle an die Konsole geben kann, statt nur die "executors" (Faders, Encoders, Buttons) bewegen zu können,
 Die Fixture Attributes, die ich kontrollieren will(Pan, Tilt, Zoom), kontrolliert werden können.
+
 11.06.24 (1.5h) Nach Herumstöbern in Internet-Foren und durchlesen der sehr vielen verschiedenen Befehle auf der GrandMA Software habe ich nun den Weg gefunden, um die gewünschten Attribute direkt ohne Faders anzusteuern. Der nächste Schritt wäre, mithilfe des Flightsticks in Python Input zu erhalten und die Lichter kontrollieren zu können. (Ein erster Code-Snippet ist hochgeladen, um zu sehen wie die Bibliothek funktioniert).
+
+
+17.07.24 Nun kann der Code mithilfe der Pyglet Bibliothek (für Spieleentwicklung) die Movers auch wirklich bewegen. Dazu habe ich jetzt ein simples Interface geschaffen, in welchem man die Bewegung der Movers mithilfe eines bewegenden Rechtecks sehen kann (nur relativ, ohne wirklichen Massstab). Dazu wird der absolute Pan/Tilt Wert oben links numerisch angezeigt.
