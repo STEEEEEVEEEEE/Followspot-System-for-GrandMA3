@@ -10,11 +10,12 @@ MA3_OSC_PORT = 8000    # Standard OSC port for GrandMA3
 client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT)
 
 # Basic OSC message structure
-Fixture = 402
+Fixture = 303
 tilt = 0
 pan = 0
 # Example: Turning on fixture 1
-
+stick_drift_x = 1.5259021896696368e-05
+stick_drift_y = 1.5259021896696368e-05
 joysticks = pyglet.input.get_joysticks()
 assert joysticks, 'Kein Joystick verbunden'
 joystick1 = joysticks[0]
@@ -23,36 +24,34 @@ joystick1.open()
 window = pyglet.window.Window(height = 1000, width = 1500)
 window.set_caption("Lightcontroller")
 batch = pyglet.graphics.Batch()
+selection = pyglet.graphics.Batch()
+control = pyglet.graphics.Batch()
 background = pyglet.shapes.Rectangle(0,0, window.width, window.height, color=(100,100,100), batch=batch)
 
 fixture_labels = []
 fixture_shapes = []
 fixtures = 3
-jx =  window.width // 2
-jy = window.height // 2
+x_middle = window.width // 2
+y_middle = window.height // 2
+jx =  0
+jy = 0
+
+jstk_rect = pyglet.shapes.Rectangle(jx, jy, window.height // 15, window.height // 15, color=(255,0,0), batch=batch)
     
-def check_collision(rect1, rect2):
-    """Checks if two pyglet.shapes.Rectangle objects are colliding."""
-        # Check for NO overlap in the x-axis (this means they DO NOT collide)
-    if (rect1.x + rect1.width <= rect2.x) or (rect2.x + rect2.width <= rect1.x):
-        #print("NONE")
-        return False
+def distancesq(me,target):
+  return (me.x-target.x)**2 + (me.y-target.y)**2
 
-    # Check for NO overlap in the y-axis (this means they DO NOT collide)
-    if (rect1.y + rect1.height <= rect2.y) or (rect2.y + rect2.height <= rect1.y):
-        #print("NONE")
-        return False
-    else:
-        # If we got here, then there is overlap on BOTH axes, meaning a collision
-        #print(f"Collision")
+def check_collision(target):
+    #print(distancesq(jstk_rect,i))
+    # Square this distance to compensate
+    if distancesq(jstk_rect,target) < (jstk_rect.width/2 + target.width/2)**2: 
         return True
-
 
 
 for i in range(fixtures):
     fix = i
-    y = window.height // 2
-    x = window.width // 2 -  window.width // 4 + window.width // 15 * (i * fixtures)
+    y = y_middle
+    x = x_middle -  window.width // 4 + window.width // 15 * (i * fixtures)
     size = window.height // 10
     label = pyglet.text.Label(f"Fixture {i + 1}", x=x + size // 2, y=y + size // 2, font_size=window.height // 100, anchor_x='center', batch=batch, color=(0,0,0,150))
     fixture_labels.append(label)
@@ -60,36 +59,90 @@ for i in range(fixtures):
     fixture_shapes.append(fixture)
 
 
-
-jstk_rect = pyglet.shapes.Rectangle(window.width // 2, window.width // 2, window.height // 15, window.height // 15, color=(255,0,0), batch=batch)
-jstk_rect.anchor_position = window.width // 2, window.height // 2
-
-def on_joyaxis_motion():
+def joyaxis_motion():
+    # stick_drift_x and _y serve as correction for stick drift on the joystick.
+    # You can change the values on top where they are defined.
     global jx
     global jy
-    jx = jx - (joystick1.x + 1.5259021896696368e-05) * window.height // 150
-    jy = jy + (joystick1.y + 1.5259021896696368e-05) * window.height // 150      
-    return jx, jy
+    if abs(joystick1.x) > 0.05:
+        jx = jx - (joystick1.x + stick_drift_x) 
+    else:
+        jx = jx
 
-@window.event
-def on_draw():
+    if abs(joystick1.y) > 0.05:
+        jy = jy + (joystick1.y + stick_drift_y) 
+    else:
+        jy = jy
+    #print(joystick1.x, joystick1.y)  
+    return jx, jy    
+
+def jstk_rectangle_movement():
+
+    joyx, joyy = joyaxis_motion()
+    
+    rectx = joyx * window.width // 700
+    recty = joyy * window.height // 700
+    
+    return rectx, recty
+
+def send_OSC():
+    """sends the OSC Message based on joystick input to control the designated fixture"""
+    global pan
+    global tilt
+    sens = 0.5
+    pan = jx  * sens
+    tilt = jy * sens * 0.7
+
+    client.send_message("/gma3/cmd", f'Fixture {Fixture} At {pan} Attribute "Pan"')
+    #print(f'{Fixture} At Pan {pan}')
+    client.send_message("/gma3/cmd", f'Fixture {Fixture} At {tilt} Attribute "Tilt"')
+    #print(f'{Fixture} At Tilt {tilt}')
+
+
+pan_position_label = pyglet.text.Label(f"Pan: {pan}", 
+    font_name="Arial",
+    font_size=17,
+    x=20, 
+    y=window.height - 20,  # Position at the top-left
+    anchor_x="left", 
+    anchor_y="top",
+    batch = batch)
+
+tilt_position_label = pyglet.text.Label(f"Tilt: {tilt}", 
+    font_name="Arial",
+    font_size=17,
+    x=20, 
+    y=window.height - 50,  # Position at the top-left
+    anchor_x="left", 
+    anchor_y="top",
+    batch = batch)
+
+
+
+
+def update():
+    collision = check_collision(fixture_shapes[1])
+    
+    
+    #print(joyx, joyy)
+    jstk_rect.postion = jstk_rectangle_movement()
+    jstk_rect.anchor_position = jstk_rectangle_movement()[0] - x_middle, jstk_rectangle_movement()[1] - y_middle
+    pan_position_label.text = f"Pan: {int(pan)}"
+    tilt_position_label.text = f"Tilt: {int(tilt)}"
+    send_OSC()
+
+def on_draw(dt):
     window.clear()
     batch.draw()
     
-    collision = check_collision(jstk_rect, fixture_shapes[0])
-    collision2 = check_collision(jstk_rect, fixture_shapes[1])
-    collision3 = check_collision(jstk_rect, fixture_shapes[2])
-    joyx, joyy = on_joyaxis_motion()
-    jstk_rect.postion = joyx, joyy
-    jstk_rect.anchor_position = joyx, joyy
-    client.send_message("/gma3/cmd", f'Fixture {Fixture} At {joyx} Attribute "Tilt"')
-    print(f'{Fixture} At Tilt {joyx}')
-    client.send_message("/gma3/cmd", f'Fixture {Fixture} At {joyy} Attribute "Pan"')
-    print(f'{Fixture} At Pan {joyy}')
-        
+    update()    
+    pass
+
+on_draw(1)
 
 
 
+pyglet.clock.schedule_interval(on_draw, 1/60.0)
 pyglet.app.run()
 #client.send_message("/gma3/Page1/Fader201",0)
 
