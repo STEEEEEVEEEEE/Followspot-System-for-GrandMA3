@@ -2,7 +2,7 @@ import pyglet
 
 joysticks = pyglet.input.get_joysticks()
 assert joysticks, 'No joystick device is connected'
-joystick = joysticks[0]
+joystick = joysticks[1]
 joystick.open()
 
 window = pyglet.window.Window(width=800, height=800)
@@ -46,7 +46,7 @@ def on_draw():
     joystick_rect.anchor_position = joystick_rect.width // 2, joystick_rect.height // 2
     joystick_rect.width = 10  + rx
     joystick_rect.height = 10  + ry
-    print(joystick.rz)
+    print(joystick.z)
 
     # Buttons
     for i in range(len(joystick.buttons)):

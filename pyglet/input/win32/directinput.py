@@ -27,6 +27,10 @@ _abs_instance_names = {
     3: 'rx',
     4: 'ry',
     5: 'rz',
+    6: 'q',
+    7: 'rq',
+    8: 'p',
+    9: 'rp',
 }
 
 _rel_instance_names = {

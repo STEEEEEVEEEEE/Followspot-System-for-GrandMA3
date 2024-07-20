@@ -225,6 +225,14 @@ class AbsoluteAxis(Control):
     RY = 'ry'
     #: Name of the rotational-Z axis control
     RZ = 'rz'
+
+    Q = 'q'
+
+    RQ = 'rq'
+
+    P = 'p'
+
+    RP = 'rp'
     #: Name of the hat (POV) control, when a single control enumerates all of
     #: the hat's positions.
     HAT = 'hat'
@@ -370,6 +378,10 @@ class Joystick(EventDispatcher):
         self.rx = 0
         self.ry = 0
         self.rz = 0
+        self.q = 0
+        self.rq = 0
+        self.p = 0
+        self.rp = 0
         self.hat_x = 0
         self.hat_y = 0
         self.buttons = []
@@ -380,6 +392,10 @@ class Joystick(EventDispatcher):
         self.rx_control = None
         self.ry_control = None
         self.rz_control = None
+        self.q_control = None
+        self.rq_control = None
+        self.p_control = None
+        self.rp_control = None
         self.hat_x_control = None
         self.hat_y_control = None
         self.button_controls = []
@@ -447,7 +463,7 @@ class Joystick(EventDispatcher):
 
         for ctrl in device.get_controls():
             if isinstance(ctrl, AbsoluteAxis):
-                if ctrl.name in ('x', 'y', 'z', 'rx', 'ry', 'rz', 'hat_x', 'hat_y'):
+                if ctrl.name in ('x', 'y', 'z', 'rx', 'ry', 'rz', 'q', 'rq', 'p', 'rp', 'hat_x', 'hat_y'):
                     add_axis(ctrl)
                 elif ctrl.name == 'hat':
                     add_hat(ctrl)
@@ -734,7 +750,7 @@ class Controller(EventDispatcher):
                 self._button_controls.append(ctrl)
 
             elif isinstance(ctrl, AbsoluteAxis):
-                if ctrl.name in ('x', 'y', 'z', 'rx', 'ry', 'rz'):
+                if ctrl.name in ('x', 'y', 'z', 'rx', 'ry', 'rz', 'q', 'rq', 'p', 'rp'):
                     self._axis_controls.append(ctrl)
                 elif ctrl.name == "hat_x":
                     self._hat_x_control = ctrl

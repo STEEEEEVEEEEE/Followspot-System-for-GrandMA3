@@ -11,7 +11,12 @@ Die Fixture Attributes, die ich kontrollieren will(Pan, Tilt, Zoom), kontrollier
 
 11.06.24 (1.5h) Nach Herumstöbern in Internet-Foren und durchlesen der sehr vielen verschiedenen Befehle auf der GrandMA Software habe ich nun den Weg gefunden, um die gewünschten Attribute direkt ohne Faders anzusteuern. Der nächste Schritt wäre, mithilfe des Flightsticks in Python Input zu erhalten und die Lichter kontrollieren zu können. (Ein erster Code-Snippet ist hochgeladen, um zu sehen wie die Bibliothek funktioniert).
 
-
-17.07.24 Nun kann der Code mithilfe der Pyglet Bibliothek (für Spieleentwicklung) die Movers auch wirklich bewegen. Dazu habe ich jetzt ein simples Interface geschaffen, in welchem man die Bewegung der Movers mithilfe eines bewegenden Rechtecks sehen kann (nur relativ, ohne wirklichen Massstab). Dazu wird der absolute Pan/Tilt Wert oben links numerisch angezeigt. 
+17.07.24 Nun kann der Code mithilfe der Pyglet Bibliothek (für Spieleentwicklung) die Movers auch wirklich bewegen. Dazu habe ich jetzt ein simples Interface geschaffen, in welchem man die Bewegung der Movers mithilfe eines bewegenden Rechtecks sehen kann (nur relativ, ohne wirklichen Massstab). Dazu wird der absolute Pan/Tilt Wert oben links numerisch angezeigt.
 
 Zusätzlich erkennt es jetzt die Kollision des Joystick Rechtecks und einer "Fixture" (Licht, auf dem Bildschirm ebenfalls durch ein Rechteck grafisch dargestellt). Dadurch wird man in Zukunft zuerst eine spezifische Fixture auswählen können um sie dann zu kontrollieren. Ebenfalls kann man nun die Anzahl Fixtures angeben und sie werden auf dem Bildschirm der Reihe nach angereiht mit dem Mittelpunkt in der Mitte des Fensters.
+
+20.07.24 Das Followspot-System hat jetzt noch ein paar zusätzliche Features erhalten. Neben kleineren Verbesserungen im Skalieren der HUD Elemente mit der Fenstergrösse kann man nun noch zusätzlich die "intensity" (Lichtstärke) und den "zoom" (Lichtwinkel) mithilfe einer "throttle" ansteuern, die beim Kauf des Flightstick-HOTAS mitgeliefert wurde.
+
+Ebenfalls kann man noch mit einer Achse am Flightstick die Sensitivität der Bewegung einstellen, um sowohl schnelle Bewegungen als auch präzise Korrekturen zu ermöglichen.
+
+Dazu wurde der gesendete Befehl an die Konsole so abgeändert, dass die Befehle, die 60 mal pro Sekunde in die Konsole reinfliessen, sie nicht vollständig Sperren und jegliche Bedienung der Konsole verhindern. Man kann jetzt sogar die gewünschte Fixture über die Konsole auswählen und dann nahtlos ihre Parameter über die Joysticks kontrollieren, wodurch bessere Zusammenarbeit zwischen den zwei LDs (Light Designers) ermöglicht wird.

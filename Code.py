@@ -19,7 +19,9 @@ stick_drift_y = 1.5259021896696368e-05
 joysticks = pyglet.input.get_joysticks()
 assert joysticks, 'Kein Joystick verbunden'
 joystick1 = joysticks[0]
+joystick2 = joysticks[1]
 joystick1.open()
+joystick2.open()
 
 window = pyglet.window.Window(height = 500, width = 750)
 window.set_caption("Lightcontroller")
@@ -93,7 +95,16 @@ def check_collision(rect1, rect2):
         return False
 
 def light_parameters():
-    pass
+
+    normalized_rq = (-joystick2.rq + 1) / 2
+    normalized_z = (joystick2.z + 1) / 2
+    intensity = normalized_rq * 100
+    zoom = (normalized_z * 57.5) + 2.5
+    print(intensity)
+    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
+    #print(f'{Fixture} At Pan {pan}')
+    client.send_message("/gma3/cmd", f'At {intensity}')
+
 
 def joyaxis_motion():
     # stick_drift_x and _y serve as correction for stick drift on the joystick.
@@ -101,7 +112,6 @@ def joyaxis_motion():
     global jx
     global jy
     normalized_z = (-joystick1.z + 1.2) / 3
-    print(normalized_z)
     sens = normalized_z
 
     if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
@@ -142,7 +152,7 @@ def send_OSC():
 
 pan_position_label = pyglet.text.Label(f"Pan: {pan}", 
     font_name="Arial",
-    font_size= window.height // 58,
+    font_size= window.height // 40,
     x= window.height // 50, 
     y=window.height - window.height // 50,  # Position at the top-left
     anchor_x="left", 
@@ -151,9 +161,9 @@ pan_position_label = pyglet.text.Label(f"Pan: {pan}",
 
 tilt_position_label = pyglet.text.Label(f"Tilt: {tilt}", 
     font_name="Arial",
-    font_size= window.height // 58,
+    font_size= window.height // 40,
     x= window.height // 50, 
-    y=window.height - window.height // 20,  # Position at the top-left
+    y=window.height - window.height // 16,  # Position at the top-left
     anchor_x="left", 
     anchor_y="top",
     batch = batch)
@@ -162,7 +172,7 @@ tilt_position_label = pyglet.text.Label(f"Tilt: {tilt}",
 create_Fixtures(fixtures)
 center_and_distribute_fixtures(fixture_shapes, fixture_labels)
 def update():
-    
+    light_parameters()
     collision = check_collision(jstk_rect, fixture_shapes[0])
     FixtureSelect_Collision()
     #print(joyx, joyy)
