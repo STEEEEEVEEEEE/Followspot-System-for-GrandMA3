@@ -73,8 +73,8 @@ def FixtureSelect_Collision():
     for i in fixture_shapes:
         collision = check_collision(jstk_rect,i)
         if collision == True:
-            print(collision, fixture_shapes[i])
-
+            #print(collision, fixture_shapes[i])
+            pass
     
 def check_collision(rect1, rect2):
     """Checks if two pyglet.shapes.Rectangle objects are colliding."""
@@ -98,12 +98,12 @@ def joyaxis_motion():
     # You can change the values on top where they are defined.
     global jx
     global jy
-    if abs(joystick1.x) > 0.05: #easier to control since it is less sensitive to small user inconsistencies 
+    if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
         jx = jx - (joystick1.x + stick_drift_x) 
     else:
         jx = jx
 
-    if abs(joystick1.y) > 0.05:
+    if abs(joystick1.y) > 0.1:
         jy = jy + (joystick1.y + stick_drift_y) 
     else:
         jy = jy
@@ -127,26 +127,26 @@ def send_OSC():
     pan = jx  * sens
     tilt = jy * sens * 0.7
 
-    client.send_message("/gma3/cmd", f'Fixture {Fixture} At {pan} Attribute "Pan"')
+    client.send_message("/gma3/cmd", f'At {pan} Attribute "Pan"')
     #print(f'{Fixture} At Pan {pan}')
-    client.send_message("/gma3/cmd", f'Fixture {Fixture} At {tilt} Attribute "Tilt"')
+    client.send_message("/gma3/cmd", f'At {tilt} Attribute "Tilt"')
     #print(f'{Fixture} At Tilt {tilt}')
 
 
 pan_position_label = pyglet.text.Label(f"Pan: {pan}", 
     font_name="Arial",
-    font_size=17,
-    x=20, 
-    y=window.height - 20,  # Position at the top-left
+    font_size= window.height // 58,
+    x= window.height // 50, 
+    y=window.height - window.height // 50,  # Position at the top-left
     anchor_x="left", 
     anchor_y="top",
     batch = batch)
 
 tilt_position_label = pyglet.text.Label(f"Tilt: {tilt}", 
     font_name="Arial",
-    font_size=17,
-    x=20, 
-    y=window.height - 50,  # Position at the top-left
+    font_size= window.height // 58,
+    x= window.height // 50, 
+    y=window.height - window.height // 20,  # Position at the top-left
     anchor_x="left", 
     anchor_y="top",
     batch = batch)
