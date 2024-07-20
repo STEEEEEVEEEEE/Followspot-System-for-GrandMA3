@@ -35,6 +35,7 @@ x_middle = window.width // 2
 y_middle = window.height // 2
 jx =  0
 jy = 0
+normalized_z = (-joystick1.z + 1) // 2
 
 def create_Fixtures(fixtures):
     for i in range(fixtures):
@@ -91,20 +92,25 @@ def check_collision(rect1, rect2):
         #print("None")
         return False
 
-
+def light_parameters():
+    pass
 
 def joyaxis_motion():
     # stick_drift_x and _y serve as correction for stick drift on the joystick.
     # You can change the values on top where they are defined.
     global jx
     global jy
+    normalized_z = (-joystick1.z + 1.2) / 3
+    print(normalized_z)
+    sens = normalized_z
+
     if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
-        jx = jx - (joystick1.x + stick_drift_x) 
+        jx = jx - (joystick1.x * sens + stick_drift_x)
     else:
         jx = jx
 
     if abs(joystick1.y) > 0.1:
-        jy = jy + (joystick1.y + stick_drift_y) 
+        jy = jy + (joystick1.y * sens + stick_drift_y)
     else:
         jy = jy
     #print(joystick1.x, joystick1.y)  
@@ -123,9 +129,10 @@ def send_OSC():
     """sends the OSC Message based on joystick input to control the designated fixture"""
     global pan
     global tilt
-    sens = 0.5
-    pan = jx  * sens
-    tilt = jy * sens * 0.7
+
+
+    pan = jx  
+    tilt = jy * 0.7
 
     client.send_message("/gma3/cmd", f'At {pan} Attribute "Pan"')
     #print(f'{Fixture} At Pan {pan}')
@@ -155,8 +162,7 @@ tilt_position_label = pyglet.text.Label(f"Tilt: {tilt}",
 create_Fixtures(fixtures)
 center_and_distribute_fixtures(fixture_shapes, fixture_labels)
 def update():
-
-
+    
     collision = check_collision(jstk_rect, fixture_shapes[0])
     FixtureSelect_Collision()
     #print(joyx, joyy)
