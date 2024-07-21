@@ -23,7 +23,7 @@ joystick2 = joysticks[1]
 joystick1.open()
 joystick2.open()
 
-window = pyglet.window.Window(height = 500, width = 750)
+window = pyglet.window.Window(height = 1000, width = 1500)
 window.set_caption("Lightcontroller")
 batch = pyglet.graphics.Batch()
 selection = pyglet.graphics.Batch()
@@ -95,7 +95,8 @@ def check_collision(rect1, rect2):
         return False
 
 def light_parameters():
-
+    global intensity
+    global zoom
     normalized_rq = (-joystick2.rq + 1) / 2
     normalized_z = (joystick2.z + 1) / 2
     intensity = normalized_rq * 100
@@ -109,11 +110,12 @@ def light_parameters():
 def joyaxis_motion():
     # stick_drift_x and _y serve as correction for stick drift on the joystick.
     # You can change the values on top where they are defined.
+    global sens
     global jx
     global jy
-    normalized_z = (-joystick1.z + 1.2) / 3
+    normalized_z = (-joystick1.z + 1.2) / 4
     sens = normalized_z
-
+    
     if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
         jx = jx - (joystick1.x * sens + stick_drift_x)
     else:
@@ -124,11 +126,11 @@ def joyaxis_motion():
     else:
         jy = jy
     #print(joystick1.x, joystick1.y)  
-    return jx, jy    
+    return jx, jy
 
 def jstk_rectangle_movement():
 
-    joyx, joyy = joyaxis_motion()
+    joyx, joyy= joyaxis_motion()
     
     rectx = joyx * window.width // 700
     recty = joyy * window.height // 700
@@ -149,24 +151,54 @@ def send_OSC():
     client.send_message("/gma3/cmd", f'At {tilt} Attribute "Tilt"')
     #print(f'{Fixture} At Tilt {tilt}')
 
-
+intensity = 0
+zoom = 0
+sens = 0
+    
 pan_position_label = pyglet.text.Label(f"Pan: {pan}", 
-    font_name="Arial",
-    font_size= window.height // 40,
-    x= window.height // 50, 
-    y=window.height - window.height // 50,  # Position at the top-left
-    anchor_x="left", 
-    anchor_y="top",
-    batch = batch)
+        font_name="Arial",
+        font_size= window.height // 40,
+        x= window.height // 50, 
+        y=window.height - window.height // 28,  # Position at the top-left
+        anchor_x="left", 
+        anchor_y="top",
+        batch = batch)
 
 tilt_position_label = pyglet.text.Label(f"Tilt: {tilt}", 
-    font_name="Arial",
-    font_size= window.height // 40,
-    x= window.height // 50, 
-    y=window.height - window.height // 16,  # Position at the top-left
-    anchor_x="left", 
-    anchor_y="top",
-    batch = batch)
+        font_name="Arial",
+        font_size= window.height // 40,
+        x= window.height // 50, 
+        y=window.height - window.height // 14.7,  # Position at the top-left
+        anchor_x="left", 
+        anchor_y="top",
+        batch = batch)
+
+sens_label = pyglet.text.Label(f"Sens: {sens}", 
+        font_name="Arial",
+        font_size= window.height // 40,
+        x= window.height // 50, 
+        y=window.height - window.height // 10,  # Position at the top-left
+        anchor_x="left", 
+        anchor_y="top",
+        batch = batch)
+
+intens_label = pyglet.text.Label(f"Intens: {intensity}", 
+        font_name="Arial",
+        font_size= window.height // 40,
+        x= window.height // 50, 
+        y=window.height - window.height // 7.5,  # Position at the top-left
+        anchor_x="left", 
+        anchor_y="top",
+        batch = batch)
+
+zoom_label = pyglet.text.Label(f"Zoom: {zoom}", 
+        font_name="Arial",
+        font_size= window.height // 40,
+        x= window.height // 50, 
+        y=window.height - window.height // 5.94,  # Position at the top-left
+        anchor_x="left", 
+        anchor_y="top",
+        batch = batch)
 
 
 create_Fixtures(fixtures)
@@ -180,6 +212,10 @@ def update():
     jstk_rect.anchor_position = jstk_rectangle_movement()[0] - x_middle, jstk_rectangle_movement()[1] - y_middle
     pan_position_label.text = f"Pan: {int(pan)}"
     tilt_position_label.text = f"Tilt: {int(tilt)}"
+    sens_label.text = f"Sens: {int(sens * 198 - 8) }"
+    intens_label.text = f"Intens: {int(intensity)}"
+    zoom_label.text = f"Zoom: {int(zoom)}"
+
     send_OSC()
 
 def on_draw(dt):
