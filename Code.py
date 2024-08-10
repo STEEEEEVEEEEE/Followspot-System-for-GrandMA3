@@ -2,6 +2,8 @@
 from pythonosc import udp_client
 import pyglet
 from pyglet.gl import *
+import math
+
 
 
 MA3_IP = "192.168.1.12"  # Replace with your GrandMA3 console's IP address
@@ -44,7 +46,7 @@ y_middle = window.height // 2
 jx =  0
 jy = 0
 normalized_z = (-joystick1.z + 1) // 2
-
+jstk_rect = pyglet.shapes.Rectangle(jx, jy, window.height // 15, window.height // 15, color=(255,0,0), batch=batch)
 
 
 
@@ -77,7 +79,7 @@ def center_and_distribute_fixtures(rectangles, labels):
         labels[i].y = rect.y + size // 2
 
 
-jstk_rect = pyglet.shapes.Rectangle(jx, jy, window.height // 15, window.height // 15, color=(255,0,0), batch=batch)
+
 
 
 def FixtureSelect_Collision(): 
@@ -110,7 +112,7 @@ def light_parameters():
     normalized_z = (joystick2.z + 1) / 2
     intensity = normalized_rq * 100
     zoom = (normalized_z * 57.5) + 2.5
-    print(intensity)
+    
     client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
     #print(f'{Fixture} At Pan {pan}')
     client.send_message("/gma3/cmd", f'At {intensity}')
@@ -164,6 +166,19 @@ intensity = 0
 zoom = 0
 sens = 0
 
+def spherical_to_cartesian():
+    z = 100
+    global x
+    global y
+    x = (Math.sine(pan - 90) * Math.tan(tilt) * z)
+    y = (Math.cosine(pan - 90) * Math.tan(tilt) * z)
+    return x, y
+
+
+
+
+
+
 
 class Labels():   
     def __init__(self):
@@ -172,7 +187,7 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 50, 
-                y=window.height - window.height // 28,  # Position at the top-left
+                y=window.height - window.height // 28,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = label)
@@ -181,7 +196,7 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 50, 
-                y=window.height - window.height // 14.7,  # Position at the top-left
+                y=window.height - window.height // 14.7,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = label)
@@ -190,7 +205,7 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 50, 
-                y=window.height - window.height // 10,  # Position at the top-left
+                y=window.height - window.height // 10,
                 anchor_x="left", 
                 anchor_y="top",
                 batch = label)
@@ -199,7 +214,7 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 50, 
-                y=window.height - window.height // 7.5,  # Position at the top-left
+                y=window.height - window.height // 7.5,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = label)
@@ -208,7 +223,7 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 50, 
-                y=window.height - window.height // 5.94,  # Position at the top-left
+                y=window.height - window.height // 5.94,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = label)
@@ -216,11 +231,38 @@ class Labels():
         self.calibration_text = pyglet.text.Label(f"", 
                 font_name="Arial",
                 font_size= window.height // 20,
-                x= window.height // 2, 
-                y=window.height - window.height // 14,  # Position at the top-left
+                x= x_middle, 
+                y=window.height - window.height // 14,  
                 anchor_x="center", 
                 anchor_y="top",
                 batch = calibration)
+        
+        self.x_label = pyglet.text.Label(f"X-Position:", 
+                font_name="Arial",
+                font_size= window.height // 20,
+                x= window.height // 40, 
+                y= window.height // 14,  
+                anchor_x="left", 
+                anchor_y="top",
+                batch = batch)
+        
+        self.y_label = pyglet.text.Label(f"Y-Position:", 
+                font_name="Arial",
+                font_size= window.height // 20,
+                x= window.height // 40, 
+                y= window.height // 14,  
+                anchor_x="left", 
+                anchor_y="top",
+                batch = batch)
+        
+        self.show_mode_label = pyglet.text.Label(f"", 
+                font_name="Arial",
+                font_size= window.height // 20,
+                x= window.height // 40, 
+                y= window.height // 3,  
+                anchor_x="left", 
+                anchor_y="top",
+                batch = label)
         
     def next_step(self, step):
         location = []
@@ -229,41 +271,42 @@ class Labels():
         three = "Top_left"
         four = "Top_right"
         location.append(one, two, three, four)
-        label_instance.calibration_text.text = f"Please direct the Followspot-Light to the {location[0][step]} and press trigger"
+        labels.calibration_text.text = f"Please direct the Followspot-Light to the {location[0][step]} and press trigger"
         pass
 
     def update_labels(self):
-        label_instance.pan_label.text = f"Pan: {int(pan)}"
-        label_instance.tilt_label.text = f"Tilt: {int(tilt)}"
-        label_instance.sens_label.text = f"Sens: {int(sens * 198 - 8) }"
-        label_instance.intens_label.text = f"Intens: {int(intensity)}"
-        label_instance.zoom_label.text = f"Zoom: {int(zoom)}"
+        labels.pan_label.text = f"Pan: {int(pan)}"
+        labels.tilt_label.text = f"Tilt: {int(tilt)}"
+        labels.sens_label.text = f"Sens: {int(sens * 198 - 8) }"
+        labels.intens_label.text = f"Intens: {int(intensity)}"
+        labels.zoom_label.text = f"Zoom: {int(zoom)}"
+        #labels.x_label.text = f"X-Position: {int(x)}"
+        #labels.y_label.text = f"Y-Position: {int(y)}"
 
-label_instance = Labels()
-create_Fixtures(fixtures)
-center_and_distribute_fixtures(fixture_shapes, fixture_labels)
-def update():
-
-    light_parameters()
-    collision = check_collision(jstk_rect, fixture_shapes[0])
-    FixtureSelect_Collision()
-
-    jstk_rect.postion = jstk_rectangle_movement()
-    jstk_rect.anchor_position = jstk_rectangle_movement()[0] - x_middle, jstk_rectangle_movement()[1] - y_middle
-    label_instance.update_labels()
-    send_OSC()
-
-def on_draw(dt):
-    window.clear()
-    batch.draw()
-    label.draw()
-    update()    
-
-on_draw(1)
+    
 
 
 
-pyglet.clock.schedule_interval(on_draw, 1/60.0)
-pyglet.app.run()
+class Math():
+
+    def sine(degrees):
+        """Calculates the sine of an angle given in degrees."""
+        radians = math.radians(degrees)  # Convert degrees to radians
+        sine_value = math.sin(radians)
+        return sine_value   # Convert the result back to degrees
+
+    def tan(degrees):
+        """Calculates the tangent of an angle given in degrees"""
+        radians = math.radians(degrees)
+        tangent_value = math.tan(radians)
+        return tangent_value
+
+    def cosine(degrees):
+        """Calculates the cosine of an angle given in degrees"""
+        radians = math.radians(degrees)
+        cosine_value = math.cos(radians)
+        return cosine_value
+
 #client.send_message("/gma3/Page1/Fader201",0)
+labels = Labels()
 

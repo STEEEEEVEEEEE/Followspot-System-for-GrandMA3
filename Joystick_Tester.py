@@ -2,7 +2,7 @@ import pyglet
 
 joysticks = pyglet.input.get_joysticks()
 assert joysticks, 'No joystick device is connected'
-joystick = joysticks[1]
+joystick = joysticks[0]
 joystick.open()
 
 window = pyglet.window.Window(width=800, height=800)

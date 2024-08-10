@@ -1,28 +1,43 @@
 import pyglet
 from pyglet.gl import *
-from Code import pan, tilt
+from Code import *
 
-joysticks = pyglet.input.get_joysticks()
-assert joysticks, 'Kein Joystick verbunden'
-joystick1 = joysticks[0]
-joystick2 = joysticks[1]
-joystick1.open()
-joystick2.open()
+
 current_step = 1
+pan = 1
+tilt = 1
+coordinates = []
+pantilt = []
 
 trigger = joystick1.buttons[0]
 trigger_pressed = False
-
+press = False
 def button_press_and_release(button):
       # Allow modifying the outer variable
+    
     global trigger_pressed
         # Get current button states
     current_state = button  # Get a list of button states
     if current_state == True and trigger_pressed == False:
         print(f"Button {button} pressed (single click)")
-
+        press = True
+    else: 
+        press = False
     trigger_pressed = current_state # Update button_states for next frame
-    return current_state
+    
+    return press
+
+def get_coordinates(step):
+    trigger = joystick1.buttons[0]
+    button_press = button_press_and_release(trigger)
+    if button_press == True:
+        coordinates.append((spherical_to_cartesian()))
+        pantilt. append((pan, tilt))
+        
+
+        print(coordinates)
+        print(pantilt)
+    return coordinates[step], pantilt[step]
 
 
 def calibration(pan, tilt):
@@ -37,12 +52,14 @@ def calibration(pan, tilt):
 
 
 
+def test(dt):
+    pass
 
-def get_coordinates():
-    coordinates = []
-    if button_press_and_release(trigger) == True:
-        coordinates.append[pan, tilt]
-    return coordinates
+
+
+
+
+
 
 
 
