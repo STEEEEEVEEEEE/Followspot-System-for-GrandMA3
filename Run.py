@@ -5,32 +5,28 @@ from Code import *
 from Calibration import *
 
 
-state = 0
-
-def cycle(state):
-    f = state
+current_state = 0
+num_states = 3
+def cycle():
+    global current_state
     switch_button = joystick1.buttons[1]
     button_press = button_press_and_release(switch_button)
     if button_press == True:
-        if f != 2:
-            f = f + 1
-    return f
+        current_state = (current_state + 1) % num_states
+
 
 def show_mode():
-    
-    mode = cycle(state)
+    cycle()
     #print(mode)
-    if mode == 0:
+    if current_state == 0:
         light_parameters()
-        send_OSC()
-        jstk_rect.postion = jstk_rectangle_movement()
-        jstk_rect.anchor_position = jstk_rectangle_movement()[0] - x_middle, jstk_rectangle_movement()[1] - y_middle
+        out_of_bounds()
         labels.update_labels()
         labels.show_mode_label.text = f"Show"
-    if mode == 1:
+    elif current_state == 1:
         labels.update_labels()
         labels.show_mode_label.text = f"No_Output"
-    if mode == 2:
+    elif current_state == 2:
         labels.show_mode_label.text = f"Edit"
         pass  
 

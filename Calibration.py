@@ -43,8 +43,8 @@ def get_coordinates(step):
 def calibration(pan, tilt):
     step = 0
     z = 4
-    x = 0
-    y = 0
+    x = -148
+    y = 11
     
     
 

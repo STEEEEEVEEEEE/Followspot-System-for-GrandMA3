@@ -35,8 +35,10 @@ label = pyglet.graphics.Batch()
 calibration = pyglet.graphics.Batch()
 selection = pyglet.graphics.Batch()
 control = pyglet.graphics.Batch()
+outofbounds = pyglet.graphics.Batch()
 
 background = pyglet.shapes.Rectangle(0,0, window.width, window.height, color=(100,100,100), batch=batch)
+
 
 fixture_labels = []
 fixture_shapes = []
@@ -78,9 +80,30 @@ def center_and_distribute_fixtures(rectangles, labels):
         labels[i].x = rect.x + size // 2
         labels[i].y = rect.y + size // 2
 
+def standard_movement():
+    jstk_rect.postion = jstk_rectangle_movement()
+    jstk_rect.anchor_position = jstk_rectangle_movement()[0] - x_middle, jstk_rectangle_movement()[1] - y_middle
 
+def out_of_bounds():
+    red_pan = int((abs(pan)-199)*2.857)
+    red_tilt = int((abs(tilt)-79)*2.454)
+    if abs(pan) <= 270 and abs(tilt) <= 135:
+        send_OSC()
+        standard_movement()
+    elif abs(pan) > 270 or abs (tilt) > 135:
+        send_OSC()
+        joyaxis_motion()
+        outofbounds.draw()
 
+    if 255 > abs(pan) > 200:
+        labels.pan_label.color = (255,-red_pan,-red_pan,255)
+    if abs(pan) >= 255:
+        labels.pan_label.color = (255,0,0,255)
 
+    if 135 > abs(tilt) > 80:
+        labels.tilt_label.color = (255,-red_tilt,-red_tilt,255)
+    if abs(tilt) >= 135:
+        labels.tilt_label.color = (255,0,0,255)
 
 def FixtureSelect_Collision(): 
 
@@ -174,12 +197,6 @@ def spherical_to_cartesian():
     y = (Math.cosine(pan - 90) * Math.tan(tilt) * z)
     return x, y
 
-
-
-
-
-
-
 class Labels():   
     def __init__(self):
 
@@ -239,18 +256,18 @@ class Labels():
         
         self.x_label = pyglet.text.Label(f"X-Position:", 
                 font_name="Arial",
-                font_size= window.height // 20,
+                font_size= window.height // 40,
                 x= window.height // 40, 
-                y= window.height // 14,  
+                y= window.height // 4,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = batch)
         
         self.y_label = pyglet.text.Label(f"Y-Position:", 
                 font_name="Arial",
-                font_size= window.height // 20,
+                font_size= window.height // 40,
                 x= window.height // 40, 
-                y= window.height // 14,  
+                y= window.height // 4.5,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = batch)
@@ -264,6 +281,17 @@ class Labels():
                 anchor_y="top",
                 batch = label)
         
+        self.out_of_bounds_label = pyglet.text.Label(f"OUT OF BOUNDS", 
+                color = (255, 0, 0, 255),
+                font_name="Arial",
+                bold = True,
+                font_size= window.height // 15,
+                x= window.height // 2.8, 
+                y= window.height // 1.2,  
+                anchor_x="left", 
+                anchor_y="top",
+                batch = outofbounds)
+        
     def next_step(self, step):
         location = []
         one = "bottom_left"
@@ -275,18 +303,16 @@ class Labels():
         pass
 
     def update_labels(self):
+        x, y = spherical_to_cartesian()
         labels.pan_label.text = f"Pan: {int(pan)}"
         labels.tilt_label.text = f"Tilt: {int(tilt)}"
         labels.sens_label.text = f"Sens: {int(sens * 198 - 8) }"
         labels.intens_label.text = f"Intens: {int(intensity)}"
         labels.zoom_label.text = f"Zoom: {int(zoom)}"
-        #labels.x_label.text = f"X-Position: {int(x)}"
-        #labels.y_label.text = f"Y-Position: {int(y)}"
+        labels.x_label.text = f"X-Position: {int(x)}"
+        labels.y_label.text = f"Y-Position: {int(y)}"
 
     
-
-
-
 class Math():
 
     def sine(degrees):
