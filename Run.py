@@ -20,7 +20,8 @@ def show_mode():
     #print(mode)
     if current_state == 0:
         light_parameters()
-        out_of_bounds()
+        #out_of_bounds()
+        send_cartesian_OSC()
         labels.update_labels()
         labels.show_mode_label.text = f"Show"
     elif current_state == 1:

@@ -190,12 +190,32 @@ zoom = 0
 sens = 0
 
 def spherical_to_cartesian():
+    
     z = 100
-    global x
-    global y
+    
+    
     x = (Math.sine(pan - 90) * Math.tan(tilt) * z)
     y = (Math.cosine(pan - 90) * Math.tan(tilt) * z)
     return x, y
+
+cart_x = -87
+cart_y = -8
+def cartesian_to_spherical():
+    z = 100
+    r = (cart_x**2 + cart_y**2)**0.5
+    cart_pan = Math.arcsine(cart_x/r)
+    cart_tilt = Math.arctan(r/z)
+
+    return cart_pan, cart_tilt
+
+def send_cartesian_OSC():
+
+    cart_pan, cart_tilt = cartesian_to_spherical()
+    
+    client.send_message("/gma3/cmd", f'At {cart_pan} Attribute "Pan"')
+    #print(f'{Fixture} At Pan {pan}')
+    client.send_message("/gma3/cmd", f'At {cart_tilt} Attribute "Tilt"')
+
 
 class Labels():   
     def __init__(self):
@@ -333,6 +353,18 @@ class Math():
         cosine_value = math.cos(radians)
         return cosine_value
 
+    def arctan(ratio):
+        """Calculates the arctan of the ratio between two cathetes, output in degrees"""
+        rat = math.atan(ratio)
+        tangent_angle = math.degrees(rat)
+        return tangent_angle
+    
+    def arcsine(ratio):
+        """Calculates the arcsine of the ratio between a cathetus and the hypotenuse, output in degrees"""
+        rat = math.asin(ratio)
+        sine_angle = math.degrees(rat)
+        return sine_angle      
+    
 #client.send_message("/gma3/Page1/Fader201",0)
 labels = Labels()
 
