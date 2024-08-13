@@ -190,22 +190,28 @@ zoom = 0
 sens = 0
 
 def spherical_to_cartesian():
-    
-    z = 100
-    
-    
-    x = (Math.sine(pan - 90) * Math.tan(tilt) * z)
-    y = (Math.cosine(pan - 90) * Math.tan(tilt) * z)
+    z = 4
+    x = (Math.sine(pan-90) * Math.tan(tilt) * z)
+    y = (Math.cosine(pan-90) * Math.tan(tilt) * z)
+    print(x,y)
     return x, y
-
-cart_x = -87
-cart_y = -8
+cart_x = -6.963154
+cart_y = -9.038917
+def cartesian_movement():
+    origin = (-5.863388133, -0.72475178)
+    max_x = (3.5538304, -0.408089844)
+    max_y = (-6.963154, -9.038917)
+    max_both = (4.398541132, -8.0420626908)
+    
+    pass
 def cartesian_to_spherical():
-    z = 100
-    r = (cart_x**2 + cart_y**2)**0.5
-    cart_pan = Math.arcsine(cart_x/r)
-    cart_tilt = Math.arctan(r/z)
-
+    z = 4
+    if cart_y >= 0:
+        r = (cart_x**2 + cart_y**2)**0.5
+    elif cart_y < 0:
+        r = -((cart_x**2 + cart_y**2)**0.5)
+    cart_pan = (Math.arcsine(cart_x/r))+90
+    cart_tilt = (Math.arctan(r/z))
     return cart_pan, cart_tilt
 
 def send_cartesian_OSC():
