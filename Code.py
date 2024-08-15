@@ -203,7 +203,38 @@ def cartesian_movement():
     max_y = (-6.963154, -9.038917)
     max_both = (4.398541132, -8.0420626908)
     
-    pass
+def translate_to_quadrilateral(input_x, input_y, corners):
+    """
+    Translates coordinates from a normalized 0-100 system to a quadrilateral defined by its corners.
+
+    Args:
+        input_x: The x-coordinate in the normalized system (0-100).
+        input_y: The y-coordinate in the normalized system (0-100).
+        corners: A list of four tuples representing the corners of the quadrilateral:
+                 [(bottom_left_x, bottom_left_y), 
+                  (bottom_right_x, bottom_right_y), 
+                  (top_left_x, top_left_y), 
+                  (top_right_x, top_right_y)]
+
+    Returns:
+        A tuple (x, y) representing the translated coordinates in the quadrilateral's space.
+    """
+
+    bl, br, tl, tr = corners
+
+    # Interpolate along the bottom and top edges based on input_x
+    bottom_x = bl[0] + (br[0] - bl[0]) * (input_x / 100)
+    bottom_y = bl[1] + (br[1] - bl[1]) * (input_x / 100)
+    top_x = tl[0] + (tr[0] - tl[0]) * (input_x / 100)
+    top_y = tl[1] + (tr[1] - tl[1]) * (input_x / 100)
+
+    # Interpolate between the bottom and top points based on input_y
+    final_x = bottom_x + (top_x - bottom_x) * (input_y / 100)
+    final_y = bottom_y + (top_y - bottom_y) * (input_y / 100)
+
+    return (final_x, final_y)
+
+
 def cartesian_to_spherical():
     z = 4
     if cart_y >= 0:
