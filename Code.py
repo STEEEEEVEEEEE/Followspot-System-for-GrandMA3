@@ -37,14 +37,16 @@ selection = pyglet.graphics.Batch()
 control = pyglet.graphics.Batch()
 outofbounds = pyglet.graphics.Batch()
 
+x_middle = window.width // 2
+y_middle = window.height // 2
+stage_origin = window.width//6, window.height//3
 background = pyglet.shapes.Rectangle(0,0, window.width, window.height, color=(100,100,100), batch=batch)
-
+Stage = pyglet.shapes.Rectangle(stage_origin[0],stage_origin[1], window.width//1.5, window.height//1.7, color = (70,70,70), batch=batch)
 
 fixture_labels = []
 fixture_shapes = []
 fixtures = 5
-x_middle = window.width // 2
-y_middle = window.height // 2
+
 jx =  0
 jy = 0
 normalized_z = (-joystick1.z + 1) // 2
@@ -76,7 +78,7 @@ def center_and_distribute_fixtures(rectangles, labels):
     # Position each rectangle
     for i, rect in enumerate(rectangles):
         rect.x = start_x + i * (rect.width + spacing)
-        rect.y = window.height // 2 - rect.height // 2  # Center vertically
+        rect.y = window.height // 2.5 - rect.height // 2  # Center vertically
         labels[i].x = rect.x + size // 2
         labels[i].y = rect.y + size // 2
 
@@ -160,15 +162,15 @@ def joyaxis_motion():
     else:
         jy = jy
     #print(joystick1.x, joystick1.y)  
+    
     return jx, jy
 
 def jstk_rectangle_movement():
 
     joyx, joyy= joyaxis_motion()
-    
-    rectx = joyx * window.width // 700
-    recty = joyy * window.height // 700
-    
+    rectx = joyx * window.width / 700
+    recty = joyy * window.height / 700
+
     return rectx, recty
 
 def send_OSC():
@@ -193,17 +195,35 @@ def spherical_to_cartesian():
     z = 4
     x = (Math.sine(pan-90) * Math.tan(tilt) * z)
     y = (Math.cosine(pan-90) * Math.tan(tilt) * z)
-    print(x,y)
-    return x, y
-cart_x = -6.963154
-cart_y = -9.038917
-def cartesian_movement():
-    origin = (-5.863388133, -0.72475178)
-    max_x = (3.5538304, -0.408089844)
-    max_y = (-6.963154, -9.038917)
-    max_both = (4.398541132, -8.0420626908)
     
-def translate_to_quadrilateral(input_x, input_y, corners):
+    return x, y
+
+#cart_x = -6.963154
+#cart_y = -9.038917
+origin = stage_origin[0], stage_origin[1]
+
+
+    
+origin1 = (-5.863388133, -0.72475178)
+max_x = (3.5538304, -0.408089844)
+max_y = (-6.963154, -9.038917)
+max_both = (4.398541132, -8.0420626908)
+coordinates = [origin1, max_x, max_y, max_both]
+
+
+def cartesian_movement(jstk_cart_position):
+
+    joyx, joyy = jstk_rectangle_movement()
+    
+    jstk_cart_position = jstk_cart_position[0] + joyx * 4, jstk_cart_position[1] + joyy * 4
+    
+    x, y = (-jstk_cart_position[0] + window.width/6)/(window.width/161), (-jstk_cart_position[1] + window.height/3)/(window.height/191.93)
+    
+    jstk_rect.postion = jstk_cart_position
+    jstk_rect.anchor_position = jstk_cart_position[0] - window.width / 3, jstk_cart_position[1] - window.height / 1.5
+    return x, y
+
+def translate_to_quadrilateral(corners):
     """
     Translates coordinates from a normalized 0-100 system to a quadrilateral defined by its corners.
 
@@ -220,8 +240,10 @@ def translate_to_quadrilateral(input_x, input_y, corners):
         A tuple (x, y) representing the translated coordinates in the quadrilateral's space.
     """
 
+    input_x, input_y = cartesian_movement(origin)
+    
     bl, br, tl, tr = corners
-
+    
     # Interpolate along the bottom and top edges based on input_x
     bottom_x = bl[0] + (br[0] - bl[0]) * (input_x / 100)
     bottom_y = bl[1] + (br[1] - bl[1]) * (input_x / 100)
@@ -231,11 +253,12 @@ def translate_to_quadrilateral(input_x, input_y, corners):
     # Interpolate between the bottom and top points based on input_y
     final_x = bottom_x + (top_x - bottom_x) * (input_y / 100)
     final_y = bottom_y + (top_y - bottom_y) * (input_y / 100)
-
+    
     return (final_x, final_y)
 
 
 def cartesian_to_spherical():
+    cart_x, cart_y = translate_to_quadrilateral(coordinates)
     z = 4
     if cart_y >= 0:
         r = (cart_x**2 + cart_y**2)**0.5
@@ -243,6 +266,7 @@ def cartesian_to_spherical():
         r = -((cart_x**2 + cart_y**2)**0.5)
     cart_pan = (Math.arcsine(cart_x/r))+90
     cart_tilt = (Math.arctan(r/z))
+    print(cart_pan, cart_tilt)
     return cart_pan, cart_tilt
 
 def send_cartesian_OSC():
@@ -360,7 +384,7 @@ class Labels():
         pass
 
     def update_labels(self):
-        x, y = spherical_to_cartesian()
+        x, y = cartesian_movement(origin)
         labels.pan_label.text = f"Pan: {int(pan)}"
         labels.tilt_label.text = f"Tilt: {int(tilt)}"
         labels.sens_label.text = f"Sens: {int(sens * 198 - 8) }"

@@ -21,9 +21,13 @@ Ebenfalls kann man noch mit einer Achse am Flightstick die Sensitivität der Bew
 
 Dazu wurde der gesendete Befehl an die Konsole so abgeändert, dass die Befehle, die 60 mal pro Sekunde in die Konsole reinfliessen, sie nicht vollständig Sperren und jegliche Bedienung der Konsole verhindern. Man kann jetzt sogar die gewünschte Fixture über die Konsole auswählen und dann nahtlos ihre Parameter über die Joysticks kontrollieren, wodurch bessere Zusammenarbeit zwischen den zwei LDs (Light Designers) ermöglicht wird.
 
-
 11.08.24 Dem System wurde nun noch die Möglichkeit gegeben, mit der Betätigung eines Knopfes zwischen dem "Show", "No_Output" und "Edit" Modus zu wechseln. Der Show Modus ist das schon vorhandene System ohne grosse Abänderung. Im No_Ouput Modus werden keine Befehle an die Konsole gesendet, wodurch man die Konsole ohne Störung verwenden kann. Der Edit Modus wird in der Zukunft als Editierfunktion dienen, damit man neue Fixtures im System definieren und ihre Position ändern kann.
 
 Zusätzlich wurde eine Warnung hinzugefügt, wenn das Licht seine maximale Umdrehung erreicht hat und sich nicht mehr weiter in die vorgegebene Richtung bewegen kann. Zudem wird im Interface die Pan/Tilt Anzeige kontinuierlich rot, wenn eine der Werte in die Nähe dieser Grenze kommt.
 
 Ebenfalls gibt es jetzt Funktionen, welche vom Kartesischen in das Sphärische oder vom Sphärischen in das Kartesische Koordinatensystem umwandeln. Beim jetzigen Stand kann man vom Kartesischen in das Sphärische Koordinatensystem nur die Kartesischen Werte eingeben, welche dann umgewandelt werden. In der Zukunft sollte dies jedoch fliessend mit der Bedienung des Joysticks funktionieren sollen.
+
+16.08.24 Die Transformation funktioniert nun auch noch fliessend mit dem Joystick. Die Position des Lichtes wird auch auf dem Interface grafisch angezeigt und zusätzlich auch die X und Y Werte (je von 0-100, mit 0,0 als unten links auf der Bühne und 100,100 als oben rechts).
+Für die Anzeige auf dem Interface brauchte es noch zusätzlich eine Funktion, welche den Joystick Input auf dem Interface in die nicht intuitiven, scheinbar zufälligen kartesischen Koordinaten umwandelt, um diese dann nachher in das sphärische Koordinatensystem(pan/tilt) zu transformieren.
+
+Somit funktioniert dieses System vollständig und der praktische Teil der MA ist fertig. Der Fokus wird nun auf den schriftlichen Kommentar gelegt.

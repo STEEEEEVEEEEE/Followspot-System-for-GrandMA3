@@ -6,7 +6,7 @@ from Code import *
 current_step = 1
 pan = 1
 tilt = 1
-coordinates = []
+coordinate = []
 pantilt = []
 
 trigger = joystick1.buttons[0]
@@ -31,13 +31,13 @@ def get_coordinates(step):
     trigger = joystick1.buttons[0]
     button_press = button_press_and_release(trigger)
     if button_press == True:
-        coordinates.append((spherical_to_cartesian()))
+        coordinate.append((spherical_to_cartesian()))
         pantilt. append((pan, tilt))
         
 
-        print(coordinates)
+        print(coordinate)
         print(pantilt)
-    return coordinates[step], pantilt[step]
+    return coordinate[step], pantilt[step]
 
 
 def calibration(pan, tilt):
