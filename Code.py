@@ -14,8 +14,8 @@ client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT)
 
 # Basic OSC message structure
 Fixture = 303
-tilt = 0
 pan = 0
+tilt = 0
 # Example: Turning on fixture 1
 stick_drift_x = 1.5259021896696368e-05
 stick_drift_y = 1.5259021896696368e-05
@@ -45,7 +45,7 @@ Stage = pyglet.shapes.Rectangle(stage_origin[0],stage_origin[1], window.width//1
 
 fixture_labels = []
 fixture_shapes = []
-fixtures = 5
+fixtures = 4
 
 jx =  0
 jy = 0
@@ -55,6 +55,12 @@ jstk_rect = pyglet.shapes.Rectangle(jx, jy, window.height // 15, window.height /
 
 
 def create_Fixtures(fixtures):
+    """
+    Creates a certain amount of fixtures
+
+    Args:
+        The amount of fixtures
+    """
     for i in range(fixtures):
         size = window.height // 10
         label = pyglet.text.Label(f"Fixture {i + 1}", x=0 + size // 2, y=0 + size // 2, font_size=window.height // 100, anchor_x='center', batch=batch, color=(0,0,0,150))
@@ -82,19 +88,26 @@ def center_and_distribute_fixtures(rectangles, labels):
         labels[i].x = rect.x + size // 2
         labels[i].y = rect.y + size // 2
 
-def standard_movement():
-    jstk_rect.postion = jstk_rectangle_movement()
-    jstk_rect.anchor_position = jstk_rectangle_movement()[0] - x_middle, jstk_rectangle_movement()[1] - y_middle
-
 def out_of_bounds():
+    """
+    Checks if the pan/tilt values are close to or exceeding the maximum rotational angle of the fixture
+
+    Slowly turns the pan/tilt labels red if the values are getting close
+    and displays an "out of bounds" warning if they exceeded
+
+    Returns:
+        True if the values have not been exceeded
+
+        False if they have been exceeded
+    
+    """
+    state = True
     red_pan = int((abs(pan)-199)*2.857)
     red_tilt = int((abs(tilt)-79)*2.454)
     if abs(pan) <= 270 and abs(tilt) <= 135:
-        send_OSC()
-        standard_movement()
+        state = False
     elif abs(pan) > 270 or abs (tilt) > 135:
-        send_OSC()
-        joyaxis_motion()
+        state = True
         outofbounds.draw()
 
     if 255 > abs(pan) > 200:
@@ -106,9 +119,10 @@ def out_of_bounds():
         labels.tilt_label.color = (255,-red_tilt,-red_tilt,255)
     if abs(tilt) >= 135:
         labels.tilt_label.color = (255,0,0,255)
+    return state
 
 def FixtureSelect_Collision(): 
-
+    """Checks for all fixture rectangles if they are colliding with the jstk_rectangle"""
     for i in fixture_shapes:
         collision = check_collision(jstk_rect,i)
         if collision == True:
@@ -116,7 +130,19 @@ def FixtureSelect_Collision():
             pass
     
 def check_collision(rect1, rect2):
-    """Checks if two pyglet.shapes.Rectangle objects are colliding."""
+    """
+    Checks if two pyglet.shapes.Rectangle objects are colliding.
+
+        Args:
+
+        tuple containing position of rect1 and rect2
+
+    Returns:
+        True if they are colliding
+
+        False if they are not colliding
+    """
+
         # Check for overlap in the x-axis
     if (-rect1.anchor_position[0] + rect1.width >= rect2.x) and (rect2.x + rect2.width >= -rect1.anchor_position[0]):
     # Check for overlap in the y-axis
@@ -131,19 +157,38 @@ def check_collision(rect1, rect2):
         return False
 
 def light_parameters():
+    """
+    Takes the input from the joystick2 axes and converts it to usable values that
+    can then be sent as an OSC command and displayed as a label in the interface
+
+    Input:
+        joystick2.rq
+        joystick2.z
+
+    the final parameters "intensity" and "zoom" are assigned as global
+    """
     global intensity
     global zoom
     normalized_rq = (-joystick2.rq + 1) / 2
     normalized_z = (joystick2.z + 1) / 2
     intensity = normalized_rq * 100
     zoom = (normalized_z * 57.5) + 2.5
-    
-    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
-    #print(f'{Fixture} At Pan {pan}')
-    client.send_message("/gma3/cmd", f'At {intensity}')
 
 
 def joyaxis_motion():
+    """
+    Takes the input from the joystick1 axes(x, y and z) that output values between -1 and 1 and converts that to 
+    a consistent increase/decrease in the value to then be used by the different ..._movement() functions
+
+    Input:
+        joystick1.x(horizontal movement)
+        joystick1.y(vertical movement)
+        joystick1.z(sensitivity)
+
+    Returns:
+        jx and jy as converted x and y values that consistently increase/decrease based on joystick input
+
+     """
     # stick_drift_x and _y serve as correction for stick drift on the joystick.
     # You can change the values on top where they are defined.
     global sens
@@ -161,20 +206,18 @@ def joyaxis_motion():
         jy = jy + (joystick1.y * sens + stick_drift_y)
     else:
         jy = jy
-    #print(joystick1.x, joystick1.y)  
     
     return jx, jy
 
-def jstk_rectangle_movement():
 
-    joyx, joyy= joyaxis_motion()
-    rectx = joyx * window.width / 700
-    recty = joyy * window.height / 700
-
-    return rectx, recty
 
 def send_OSC():
-    """sends the OSC Message based on joystick input to control the designated fixture"""
+    """
+    sends the OSC Message based on joystick input to control the designated fixture
+
+    Adjusts and sends the jx and jy values from the joyaxis_motion() function
+    """
+
     global pan
     global tilt
 
@@ -182,16 +225,30 @@ def send_OSC():
     pan = jx  
     tilt = -jy * 0.7
 
+        
+    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
+    client.send_message("/gma3/cmd", f'At {intensity}')
+
     client.send_message("/gma3/cmd", f'At {pan} Attribute "Pan"')
-    #print(f'{Fixture} At Pan {pan}')
     client.send_message("/gma3/cmd", f'At {tilt} Attribute "Tilt"')
-    #print(f'{Fixture} At Tilt {tilt}')
+
 
 intensity = 0
 zoom = 0
 sens = 0
 
 def spherical_to_cartesian():
+    """
+    Takes the spherical coordinates(pan/tilt) and translates them to a cartesian coordinate system
+
+    Input(no arguments): 
+        Global Pan
+        Global Tilt
+        z (Height: can be chosen at random since the height is constant and therefore cancels out when transforming back to spherical)
+
+    Returns:
+        x and y in the cartesian coordinate system
+    """
     z = 4
     x = (Math.sine(pan-90) * Math.tan(tilt) * z)
     y = (Math.cosine(pan-90) * Math.tan(tilt) * z)
@@ -204,43 +261,62 @@ origin = stage_origin[0], stage_origin[1]
 
 
     
-origin1 = (-5.863388133, -0.72475178)
-max_x = (3.5538304, -0.408089844)
-max_y = (-6.963154, -9.038917)
-max_both = (4.398541132, -8.0420626908)
+origin1 = (-5.863388133, -0.72475178)           #the bottom-left corner of the stage
+max_x = (3.5538304, -0.408089844)               #the bottom-right corner of the stage
+max_y = (-6.963154, -9.038917)                  #the top-left corner of the stage
+max_both = (4.398541132, -8.0420626908)         #the top-right corner of the stage
 coordinates = [origin1, max_x, max_y, max_both]
 
-
 def cartesian_movement(jstk_cart_position):
+    """
+    Takes the x and y values from the jstk_rectangle_movement() function and transforms them to output values in the 0-100
+    range if the red jstk_rectangle is somewhere on the stage.
 
-    joyx, joyy = jstk_rectangle_movement()
+    Args:
+        jstk_cart_position: The initial position of the rectangle on the stage
     
-    jstk_cart_position = jstk_cart_position[0] + joyx * 4, jstk_cart_position[1] + joyy * 4
+    Input:
+        The joyx and joyy values from the jstk_rectangle_movement() function
+
+    Returns:
+        The adjusted x and y values of the jstk_rectangle to be further used in the translate_to_quadrilateral() function
+    """
+    global cart_x
+    global cart_y
     
-    x, y = (-jstk_cart_position[0] + window.width/6)/(window.width/161), (-jstk_cart_position[1] + window.height/3)/(window.height/191.93)
+    cart_joyx, cart_joyy = joyaxis_motion()
     
-    jstk_rect.postion = jstk_cart_position
-    jstk_rect.anchor_position = jstk_cart_position[0] - window.width / 3, jstk_cart_position[1] - window.height / 1.5
-    return x, y
+    jstk_cart_position = jstk_cart_position[0] + cart_joyx * window.width/175, jstk_cart_position[1] + cart_joyy * window.height / 175
+    
+    cart_x, cart_y = (-jstk_cart_position[0] + window.width/6)/(window.width/161), (-jstk_cart_position[1] + window.height/3)/(window.height/191.93)
+    return jstk_cart_position, cart_x, cart_y
+
+def rectangle_movement():
+    """Takes the positional value of the cartesian_movement() function and applies it to the pyglet jstk_rectangle shape"""
+    position = cartesian_movement(origin)
+    jstk_rect.postion = position[0]
+    jstk_rect.anchor_position = position[0][0] - window.width / 3, position[0][1] - window.height / 1.5
+    
 
 def translate_to_quadrilateral(corners):
     """
     Translates coordinates from a normalized 0-100 system to a quadrilateral defined by its corners.
 
     Args:
-        input_x: The x-coordinate in the normalized system (0-100).
-        input_y: The y-coordinate in the normalized system (0-100).
         corners: A list of four tuples representing the corners of the quadrilateral:
                  [(bottom_left_x, bottom_left_y), 
                   (bottom_right_x, bottom_right_y), 
                   (top_left_x, top_left_y), 
                   (top_right_x, top_right_y)]
 
+    Input:
+            The x and y values from the cartesian_movement() function
+
     Returns:
         A tuple (x, y) representing the translated coordinates in the quadrilateral's space.
     """
 
-    input_x, input_y = cartesian_movement(origin)
+    input_x, input_y = cart_x, cart_y
     
     bl, br, tl, tr = corners
     
@@ -254,31 +330,98 @@ def translate_to_quadrilateral(corners):
     final_x = bottom_x + (top_x - bottom_x) * (input_y / 100)
     final_y = bottom_y + (top_y - bottom_y) * (input_y / 100)
     
-    return (final_x, final_y)
-
-
+    return final_x, final_y
+state = False
+overflow = False
 def cartesian_to_spherical():
+    """
+    Transforms the interpolated values from the translate_to_quadrilateral 
+    function to the spherical coordinate system.
+
+    Input(already in the code, no arguments):
+        Interpolated values from translate_to_quadrilateral() function.
+        z: should be the same as in the spherical_to_cartesian() function for accurate results
+
+    Returns:
+        A tuple (cart_pan, cart_tilt) representing the transformed values in the spherical coordinate system(pan/tilt).
+    """
+
+    global cart_pan
+    global cart_tilt
+    global state
     cart_x, cart_y = translate_to_quadrilateral(coordinates)
     z = 4
-    if cart_y >= 0:
-        r = (cart_x**2 + cart_y**2)**0.5
-    elif cart_y < 0:
-        r = -((cart_x**2 + cart_y**2)**0.5)
-    cart_pan = (Math.arcsine(cart_x/r))+90
-    cart_tilt = (Math.arctan(r/z))
-    print(cart_pan, cart_tilt)
-    return cart_pan, cart_tilt
+
+    if state == False:
+        if cart_y >= 0 and cart_x < 0:
+            r = (cart_x**2 + cart_y**2)**0.5
+            cart_pan = (((Math.arcsine(cart_x/r))+90)+180)
+            cart_tilt = -(Math.arctan(r/z))
+        elif cart_y < 0 and cart_x < 0:
+            r = -((cart_x**2 + cart_y**2)**0.5)
+            cart_pan = ((Math.arcsine(cart_x/r))+90)
+            cart_tilt = (Math.arctan(r/z))
+        elif cart_y < 0 and cart_x > 0:
+            r = -((cart_x**2 + cart_y**2)**0.5)
+            cart_pan = ((Math.arcsine(cart_x/r))+90)
+            cart_tilt = (Math.arctan(r/z))
+        elif cart_y >= 0 and cart_x > 0:
+            r = -((cart_x**2 + cart_y**2)**0.5)
+            cart_pan = -((Math.arcsine(cart_x/r))+90)
+            cart_tilt = (Math.arctan(r/z))
+    elif state == True:
+        if cart_y >= 0 and cart_x < 0:
+            r = (cart_x**2 + cart_y**2)**0.5
+            cart_pan = (((Math.arcsine(cart_x/r))+90)-180)
+            cart_tilt = -(Math.arctan(r/z))
+        elif cart_y < 0 and cart_x < 0:
+            r = -((cart_x**2 + cart_y**2)**0.5)
+            cart_pan = (((Math.arcsine(cart_x/r))+90)-360)
+            cart_tilt = (Math.arctan(r/z))
+        elif cart_y < 0 and cart_x > 0:
+            r = -((cart_x**2 + cart_y**2)**0.5)
+            cart_pan = ((Math.arcsine(cart_x/r))+90)
+            cart_tilt = (Math.arctan(r/z))
+        elif cart_y >= 0 and cart_x > 0:
+            r = -((cart_x**2 + cart_y**2)**0.5)
+            cart_pan = -((Math.arcsine(cart_x/r))+90)
+            cart_tilt = (Math.arctan(r/z))
+
+
+    print(cart_x,cart_y)
 
 def send_cartesian_OSC():
-
-    cart_pan, cart_tilt = cartesian_to_spherical()
+    """
+    Sends the OSC command in the cartesian coordinate system and for the zoom and intensity values.
     
-    client.send_message("/gma3/cmd", f'At {cart_pan} Attribute "Pan"')
-    #print(f'{Fixture} At Pan {pan}')
-    client.send_message("/gma3/cmd", f'At {cart_tilt} Attribute "Tilt"')
+    Input(already in the code, no arguments): 
+        cartesian value from cartesian_to_spherical() function
+        zoom and intensity values from the light_parameters() function
 
+
+    """
+    global pan
+    global tilt
+    global state
+    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
+    client.send_message("/gma3/cmd", f'At {intensity}')
+    if cart_pan < 0:
+        state = True
+    elif cart_pan > 0:
+        state = False
+    client.send_message("/gma3/cmd", f'At {cart_pan} Attribute "Pan"')
+    client.send_message("/gma3/cmd", f'At {cart_tilt} Attribute "Tilt"')
+    pan = cart_pan
+    tilt = cart_tilt
+
+    
 
 class Labels():   
+    """
+    A class that contains the parameters for all the labels that are displayed in the interface
+    
+    Also contains functions to dynamically change the values of the parameters
+    """
     def __init__(self):
 
         self.pan_label = pyglet.text.Label(f"Pan: {pan}", 
@@ -384,7 +527,7 @@ class Labels():
         pass
 
     def update_labels(self):
-        x, y = cartesian_movement(origin)
+        x, y = cartesian_movement(origin)[1], cartesian_movement(origin)[2]
         labels.pan_label.text = f"Pan: {int(pan)}"
         labels.tilt_label.text = f"Tilt: {int(tilt)}"
         labels.sens_label.text = f"Sens: {int(sens * 198 - 8) }"
@@ -392,9 +535,11 @@ class Labels():
         labels.zoom_label.text = f"Zoom: {int(zoom)}"
         labels.x_label.text = f"X-Position: {int(x)}"
         labels.y_label.text = f"Y-Position: {int(y)}"
-
     
 class Math():
+    """
+    A class with trigonometric functions that use degrees instead of radians that are used by the official math module
+    """
 
     def sine(degrees):
         """Calculates the sine of an angle given in degrees."""

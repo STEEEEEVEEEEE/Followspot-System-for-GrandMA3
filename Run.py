@@ -6,7 +6,7 @@ from Calibration import *
 
 
 current_state = 0
-num_states = 3
+num_states = 2
 def cycle():
     global current_state
     switch_button = joystick1.buttons[1]
@@ -17,21 +17,24 @@ def cycle():
 
 def show_mode():
     cycle()
-    #print(mode)
     if current_state == 0:
         light_parameters()
-        #out_of_bounds()
-        send_cartesian_OSC()
-        
+        bounds_state = out_of_bounds()
+        if bounds_state == False:
+            rectangle_movement()
+            cartesian_to_spherical()
+            send_cartesian_OSC()
+            labels.update_labels()
+            labels.show_mode_label.text = f"Show"
+        elif bounds_state == True:
+            cartesian_movement(origin)
         #send_cartesian_OSC()
         labels.update_labels()
         labels.show_mode_label.text = f"Show"
     elif current_state == 1:
         labels.update_labels()
         labels.show_mode_label.text = f"No_Output"
-    elif current_state == 2:
-        labels.show_mode_label.text = f"Edit"
-        pass  
+
 
 jstk_rect = pyglet.shapes.Rectangle(jx, jy, window.height // 15, window.height // 15, color=(255,0,0), batch=batch)
 
