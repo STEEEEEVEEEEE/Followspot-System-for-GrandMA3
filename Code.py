@@ -6,8 +6,8 @@ import math
 
 
 
-MA3_IP = "192.168.1.12"  # Replace with your GrandMA3 console's IP address
-MA3_OSC_PORT = 8000    # Standard OSC port for GrandMA3
+MA3_IP = "192.168.1.16"  # Replace with your GrandMA3 console's IP address
+MA3_OSC_PORT = 8000    # OSC port for GrandMA3
 
 
 client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT)
@@ -27,7 +27,7 @@ joystick1.open()
 joystick2.open()
 
 
-window = pyglet.window.Window(height = 1000, width = 1500)
+window = pyglet.window.Window(fullscreen = True)
 window.set_caption("Lightcontroller")
 
 batch = pyglet.graphics.Batch()
@@ -50,7 +50,9 @@ fixtures = 4
 jx =  0
 jy = 0
 normalized_z = (-joystick1.z + 1) // 2
-jstk_rect = pyglet.shapes.Rectangle(jx, jy, window.height // 15, window.height // 15, color=(255,0,0), batch=batch)
+jstk_rect = pyglet.shapes.Circle(jx, jy, window.height // 25, color=(255,0,0, 150), batch=batch)
+
+offset = 90
 
 
 
@@ -110,15 +112,18 @@ def out_of_bounds():
         state = True
         outofbounds.draw()
 
-    if 255 > abs(pan) > 200:
+    if 255 > abs(pan) >= 200:
         labels.pan_label.color = (255,-red_pan,-red_pan,255)
     if abs(pan) >= 255:
         labels.pan_label.color = (255,0,0,255)
-
+    elif abs(pan) < 200:
+        labels.pan_label.color = (255,255,255,255)
     if 135 > abs(tilt) > 80:
         labels.tilt_label.color = (255,-red_tilt,-red_tilt,255)
     if abs(tilt) >= 135:
         labels.tilt_label.color = (255,0,0,255)
+    elif abs(tilt) < 80:
+        labels.tilt_label.color = (255,255,255,255)
     return state
 
 def FixtureSelect_Collision(): 
@@ -169,9 +174,9 @@ def light_parameters():
     """
     global intensity
     global zoom
-    normalized_rq = (-joystick2.rq + 1) / 2
+    #normalized_rq = (-joystick2.rq + 1) / 2
     normalized_z = (joystick2.z + 1) / 2
-    intensity = normalized_rq * 100
+    #intensity = normalized_rq * 100
     zoom = (normalized_z * 57.5) + 2.5
 
 
@@ -183,7 +188,7 @@ def joyaxis_motion():
     Input:
         joystick1.x(horizontal movement)
         joystick1.y(vertical movement)
-        joystick1.z(sensitivity)
+        joystick2.rq(sensitivity)
 
     Returns:
         jx and jy as converted x and y values that consistently increase/decrease based on joystick input
@@ -194,8 +199,8 @@ def joyaxis_motion():
     global sens
     global jx
     global jy
-    normalized_z = (-joystick1.z + 1.2) / 4
-    sens = normalized_z
+    normalized_rq = (-joystick2.rq + 1.2) / 10
+    sens = normalized_rq
     
     if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
         jx = jx - (joystick1.x * sens + stick_drift_x)
@@ -225,10 +230,8 @@ def send_OSC():
     pan = jx  
     tilt = -jy * 0.7
 
-        
-    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
-    client.send_message("/gma3/cmd", f'At {intensity}')
 
+    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
     client.send_message("/gma3/cmd", f'At {pan} Attribute "Pan"')
     client.send_message("/gma3/cmd", f'At {tilt} Attribute "Tilt"')
 
@@ -244,15 +247,18 @@ def spherical_to_cartesian():
     Input(no arguments): 
         Global Pan
         Global Tilt
-        z (Height: can be chosen at random since the height is constant and therefore cancels out when transforming back to spherical)
+        z (Height: can be chosen at random since the height is constant
+        and therefore cancels out when transforming back to spherical)
 
     Returns:
         x and y in the cartesian coordinate system
     """
+    global x
+    global y
     z = 4
-    x = (Math.sine(pan-90) * Math.tan(tilt) * z)
-    y = (Math.cosine(pan-90) * Math.tan(tilt) * z)
-    
+    x = (Math.sine(pan-offset) * Math.tan(tilt) * z)
+    y = (Math.cosine(pan-offset) * Math.tan(tilt) * z)
+    print(x,y)
     return x, y
 
 #cart_x = -6.963154
@@ -261,10 +267,22 @@ origin = stage_origin[0], stage_origin[1]
 
 
     
-origin1 = (-5.863388133, -0.72475178)           #the bottom-left corner of the stage
-max_x = (3.5538304, -0.408089844)               #the bottom-right corner of the stage
-max_y = (-6.963154, -9.038917)                  #the top-left corner of the stage
-max_both = (4.398541132, -8.0420626908)         #the top-right corner of the stage
+#origin1 = (-5.863388133, -0.72475178)           #the bottom-left corner of the stage
+#max_x = (3.5538304, -0.408089844)               #the bottom-right corner of the stage
+#max_y = (-6.963154, -9.038917)                  #the top-left corner of the stage
+#max_both = (4.398541132, -8.0420626908)         #the top-right corner of the stage
+
+
+#origin1 = (-4.89478, -3.77743)           #the bottom-left corner of the stage
+#max_x = (2.237131, -3.968535)               #the bottom-right corner of the stage
+#max_y = (-5, -7.8916922)                  #the top-left corner of the stage
+#max_both = (2.62696221, -7.8916922)         #the top-right corner of the stage
+
+origin1 = (-7.1160833, 5.833910)           #the bottom-left corner of the stage
+max_x = (4.8003327, 4.6627282)               #the bottom-right corner of the stage
+max_y = (-5.073917, -3.6413534)                  #the top-left corner of the stage
+max_both = (2.5557522, -2.339679)         #the top-right corner of the stage
+
 coordinates = [origin1, max_x, max_y, max_both]
 
 def cartesian_movement(jstk_cart_position):
@@ -288,15 +306,21 @@ def cartesian_movement(jstk_cart_position):
     
     jstk_cart_position = jstk_cart_position[0] + cart_joyx * window.width/175, jstk_cart_position[1] + cart_joyy * window.height / 175
     
-    cart_x, cart_y = (-jstk_cart_position[0] + window.width/6)/(window.width/161), (-jstk_cart_position[1] + window.height/3)/(window.height/191.93)
+    cart_x, cart_y = (-jstk_cart_position[0] + window.width/6)/(window.width/151), (-jstk_cart_position[1] + window.height/3)/(window.height/171)
     return jstk_cart_position, cart_x, cart_y
+
+def standard_movement():
+    position = joyaxis_motion()
+    jstk_rect.postion = position[0]
+    jstk_rect.anchor_position = position[0][0] - window.width / 3, position[0][1] - window.height / 1.5
+    jstk_rect.radius = (zoom + 10) * 1.5
 
 def rectangle_movement():
     """Takes the positional value of the cartesian_movement() function and applies it to the pyglet jstk_rectangle shape"""
     position = cartesian_movement(origin)
     jstk_rect.postion = position[0]
     jstk_rect.anchor_position = position[0][0] - window.width / 3, position[0][1] - window.height / 1.5
-    
+    jstk_rect.radius = (zoom + 10) * 1.5
 
 def translate_to_quadrilateral(corners):
     """
@@ -331,8 +355,11 @@ def translate_to_quadrilateral(corners):
     final_y = bottom_y + (top_y - bottom_y) * (input_y / 100)
     
     return final_x, final_y
+
+
 state = False
 overflow = False
+
 def cartesian_to_spherical():
     """
     Transforms the interpolated values from the translate_to_quadrilateral 
@@ -355,40 +382,40 @@ def cartesian_to_spherical():
     if state == False:
         if cart_y >= 0 and cart_x < 0:
             r = (cart_x**2 + cart_y**2)**0.5
-            cart_pan = (((Math.arcsine(cart_x/r))+90)+180)
+            cart_pan = (((Math.arcsine(cart_x/r))+offset)+180)
             cart_tilt = -(Math.arctan(r/z))
         elif cart_y < 0 and cart_x < 0:
             r = -((cart_x**2 + cart_y**2)**0.5)
-            cart_pan = ((Math.arcsine(cart_x/r))+90)
+            cart_pan = ((Math.arcsine(cart_x/r))+offset)
             cart_tilt = (Math.arctan(r/z))
         elif cart_y < 0 and cart_x > 0:
             r = -((cart_x**2 + cart_y**2)**0.5)
-            cart_pan = ((Math.arcsine(cart_x/r))+90)
+            cart_pan = ((Math.arcsine(cart_x/r))+offset)
             cart_tilt = (Math.arctan(r/z))
         elif cart_y >= 0 and cart_x > 0:
             r = -((cart_x**2 + cart_y**2)**0.5)
-            cart_pan = -((Math.arcsine(cart_x/r))+90)
+            cart_pan = -((Math.arcsine(cart_x/r))+offset)
             cart_tilt = (Math.arctan(r/z))
     elif state == True:
         if cart_y >= 0 and cart_x < 0:
             r = (cart_x**2 + cart_y**2)**0.5
-            cart_pan = (((Math.arcsine(cart_x/r))+90)-180)
+            cart_pan = (((Math.arcsine(cart_x/r))+offset)-180)
             cart_tilt = -(Math.arctan(r/z))
         elif cart_y < 0 and cart_x < 0:
             r = -((cart_x**2 + cart_y**2)**0.5)
-            cart_pan = (((Math.arcsine(cart_x/r))+90)-360)
+            cart_pan = (((Math.arcsine(cart_x/r))+offset)-360)
             cart_tilt = (Math.arctan(r/z))
         elif cart_y < 0 and cart_x > 0:
             r = -((cart_x**2 + cart_y**2)**0.5)
-            cart_pan = ((Math.arcsine(cart_x/r))+90)
+            cart_pan = ((Math.arcsine(cart_x/r))+offset)
             cart_tilt = (Math.arctan(r/z))
         elif cart_y >= 0 and cart_x > 0:
             r = -((cart_x**2 + cart_y**2)**0.5)
-            cart_pan = -((Math.arcsine(cart_x/r))+90)
+            cart_pan = -((Math.arcsine(cart_x/r))+offset)
             cart_tilt = (Math.arctan(r/z))
 
 
-    print(cart_x,cart_y)
+
 
 def send_cartesian_OSC():
     """
@@ -397,24 +424,24 @@ def send_cartesian_OSC():
     Input(already in the code, no arguments): 
         cartesian value from cartesian_to_spherical() function
         zoom and intensity values from the light_parameters() function
-
-
     """
     global pan
     global tilt
     global state
     client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
-    client.send_message("/gma3/cmd", f'At {intensity}')
+    #client.send_message("/gma3/cmd", f'At {intensity}')
     if cart_pan < 0:
         state = True
-    elif cart_pan > 0:
+        client.send_message("/gma3/cmd", f'At {cart_pan} Attribute "Pan"')
+        client.send_message("/gma3/cmd", f'At {cart_tilt} Attribute "Tilt"')
+    elif cart_pan >= 0:
         state = False
     client.send_message("/gma3/cmd", f'At {cart_pan} Attribute "Pan"')
     client.send_message("/gma3/cmd", f'At {cart_tilt} Attribute "Tilt"')
     pan = cart_pan
     tilt = cart_tilt
 
-    
+
 
 class Labels():   
     """
@@ -455,16 +482,16 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 50, 
-                y=window.height - window.height // 7.5,  
+                y=window.height - window.height // 5.94,  
                 anchor_x="left", 
                 anchor_y="top",
-                batch = label)
+                batch = control)
 
         self.zoom_label = pyglet.text.Label(f"Zoom: {zoom}", 
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 50, 
-                y=window.height - window.height // 5.94,  
+                y=window.height - window.height // 7.5,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = label)
@@ -482,7 +509,7 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 40, 
-                y= window.height // 4,  
+                y= window.height // 9,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = batch)
@@ -491,7 +518,7 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 40,
                 x= window.height // 40, 
-                y= window.height // 4.5,  
+                y= window.height // 14,  
                 anchor_x="left", 
                 anchor_y="top",
                 batch = batch)
@@ -500,10 +527,10 @@ class Labels():
                 font_name="Arial",
                 font_size= window.height // 20,
                 x= window.height // 40, 
-                y= window.height // 3,  
+                y= window.height // 5,  
                 anchor_x="left", 
                 anchor_y="top",
-                batch = label)
+                batch = batch)
         
         self.out_of_bounds_label = pyglet.text.Label(f"OUT OF BOUNDS", 
                 color = (255, 0, 0, 255),
@@ -524,13 +551,13 @@ class Labels():
         four = "Top_right"
         location.append(one, two, three, four)
         labels.calibration_text.text = f"Please direct the Followspot-Light to the {location[0][step]} and press trigger"
-        pass
+
 
     def update_labels(self):
         x, y = cartesian_movement(origin)[1], cartesian_movement(origin)[2]
         labels.pan_label.text = f"Pan: {int(pan)}"
         labels.tilt_label.text = f"Tilt: {int(tilt)}"
-        labels.sens_label.text = f"Sens: {int(sens * 198 - 8) }"
+        labels.sens_label.text = f"Sens: {int(sens * 495 - 8) }"
         labels.intens_label.text = f"Intens: {int(intensity)}"
         labels.zoom_label.text = f"Zoom: {int(zoom)}"
         labels.x_label.text = f"X-Position: {int(x)}"
