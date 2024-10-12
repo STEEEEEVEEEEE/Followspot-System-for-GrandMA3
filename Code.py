@@ -27,21 +27,24 @@ joystick1.open()
 joystick2.open()
 
 
-window = pyglet.window.Window(fullscreen = True)
+window = pyglet.window.Window(width = 1000, height = 500)
 window.set_caption("Lightcontroller")
 
 batch = pyglet.graphics.Batch()
 label = pyglet.graphics.Batch()
-calibration = pyglet.graphics.Batch()
+calibration_batch = pyglet.graphics.Batch()
 selection = pyglet.graphics.Batch()
 control = pyglet.graphics.Batch()
 outofbounds = pyglet.graphics.Batch()
 
 x_middle = window.width // 2
 y_middle = window.height // 2
+
 stage_origin = window.width//6, window.height//3
 background = pyglet.shapes.Rectangle(0,0, window.width, window.height, color=(100,100,100), batch=batch)
 Stage = pyglet.shapes.Rectangle(stage_origin[0],stage_origin[1], window.width//1.5, window.height//1.7, color = (70,70,70), batch=batch)
+stage_middle = Stage.x + Stage.width / 2, Stage.y + Stage.height / 2
+origin = stage_origin[0], stage_origin[1]
 
 fixture_labels = []
 fixture_shapes = []
@@ -263,7 +266,7 @@ def spherical_to_cartesian():
 
 #cart_x = -6.963154
 #cart_y = -9.038917
-origin = stage_origin[0], stage_origin[1]
+
 
 
     
@@ -318,7 +321,6 @@ def standard_movement():
 def rectangle_movement():
     """Takes the positional value of the cartesian_movement() function and applies it to the pyglet jstk_rectangle shape"""
     position = cartesian_movement(origin)
-    jstk_rect.postion = position[0]
     jstk_rect.anchor_position = position[0][0] - window.width / 3, position[0][1] - window.height / 1.5
     jstk_rect.radius = (zoom + 10) * 1.5
 
@@ -496,14 +498,14 @@ class Labels():
                 anchor_y="top",
                 batch = label)
         
-        self.calibration_text = pyglet.text.Label(f"", 
+        self.calibration_text = pyglet.text.Label(f"Calibration", 
                 font_name="Arial",
                 font_size= window.height // 20,
                 x= x_middle, 
                 y=window.height - window.height // 14,  
                 anchor_x="center", 
                 anchor_y="top",
-                batch = calibration)
+                batch = calibration_batch)
         
         self.x_label = pyglet.text.Label(f"X-Position:", 
                 font_name="Arial",
