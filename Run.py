@@ -55,8 +55,6 @@ def show_mode():
 
 
 
-
-
 #create_Fixtures(fixtures)
 #center_and_distribute_fixtures(fixture_shapes, fixture_labels)
 def update():

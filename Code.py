@@ -261,7 +261,6 @@ def spherical_to_cartesian():
     z = 4
     x = (Math.sine(pan-offset) * Math.tan(tilt) * z)
     y = (Math.cosine(pan-offset) * Math.tan(tilt) * z)
-    print(x,y)
     return x, y
 
 #cart_x = -6.963154
@@ -500,7 +499,7 @@ class Labels():
         
         self.calibration_text = pyglet.text.Label(f"Calibration", 
                 font_name="Arial",
-                font_size= window.height // 20,
+                font_size= window.height // 40,
                 x= x_middle, 
                 y=window.height - window.height // 14,  
                 anchor_x="center", 
@@ -547,12 +546,14 @@ class Labels():
         
     def next_step(self, step):
         location = []
-        one = "bottom_left"
-        two = "bottom_right"
-        three = "Top_left"
-        four = "Top_right"
-        location.append(one, two, three, four)
-        labels.calibration_text.text = f"Please direct the Followspot-Light to the {location[0][step]} and press trigger"
+        one = f"Please direct the Followspot-Light to the bottom-left and press trigger"
+        two = f"Please direct the Followspot-Light to the bottom-right and press trigger"
+        three = f"Please direct the Followspot-Light to the top-left and press trigger"
+        four = f"Please direct the Followspot-Light to the top-right and press trigger"
+        five = "If you wish to confirm, leave calibration mode. If you still want to make readjustments, press trigger"
+        six = "Succesfully stored, you can now leave calibration mode"
+        location.append([one, two, three, four, five])
+        labels.calibration_text.text = location[0][step]
 
 
     def update_labels(self):
