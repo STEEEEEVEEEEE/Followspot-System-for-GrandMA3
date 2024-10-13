@@ -1,33 +1,41 @@
-Followspot-System
+# Followspot System for GrandMA3
 
-As I made this followspot-system for my "Maturaarbeit", a final highschool project in Switzerland, there is some sort of documentation of my progress needed, which will be done here in German. You can just skip this part and go directly to the actual README at line (START README).
 
-02.06.24 (3h) Erster grosser Fortschritt: OSC auf der GrandMA3 funktioniert, bisher war das nicht der Fall, da ich versucht habe, die OSC Daten auf meinen PC zuhause zu senden, welcher wegen fehlender GrandMA Hardware ein abgeschlossenes Netzwerk hat und deshalb Daten nicht senden oder empfangen lässt. Die Daten wurden zum Testen jetzt über TouchOSC gesendet, da die Konfiguration über diese Software einfacher ist. Den Input habe ich bisher nur auf dem System-Monitor der MA Software gesehen, jedoch hat noch nichts sonst auf der Konsole darauf reagiert. Wahrscheinlich liegt das daran, dass die gesendeten Befehle nicht stimmen.
+This system serves as a tool to make controlling movers on a grandMA3 faster and easier, which also lets them be used as followspots.
 
-10.06.24 (1h) Die Befehle wurden nun so abgeändert, dass sie die Konsole auch steuern können und so auch die Lichter angeschaltet werden. Die Dokumentation zu OSC über GrandMA ist nicht sehr ausführlich, weshalb ich noch herausfinden muss, wie:
 
-Man direkte Befehle an die Konsole geben kann, statt nur die "executors" (Faders, Encoders, Buttons) bewegen zu können,
-Die Fixture Attributes, die ich kontrollieren will(Pan, Tilt, Zoom), kontrolliert werden können.
+Setup:
 
-11.06.24 (1.5h) Nach Herumstöbern in Internet-Foren und durchlesen der sehr vielen verschiedenen Befehle auf der GrandMA Software habe ich nun den Weg gefunden, um die gewünschten Attribute direkt ohne Faders anzusteuern. Der nächste Schritt wäre, mithilfe des Flightsticks in Python Input zu erhalten und die Lichter kontrollieren zu können. (Ein erster Code-Snippet ist hochgeladen, um zu sehen wie die Bibliothek funktioniert).
+The IP-Adress and Console Port are defined at the top of the *Code.py* file.
+Standard values are at 192.168.1.16 and Port 8000
 
-17.07.24 Nun kann der Code mithilfe der Pyglet Bibliothek (für Spieleentwicklung) die Movers auch wirklich bewegen. Dazu habe ich jetzt ein simples Interface geschaffen, in welchem man die Bewegung der Movers mithilfe eines bewegenden Rechtecks sehen kann (nur relativ, ohne wirklichen Massstab). Dazu wird der absolute Pan/Tilt Wert oben links numerisch angezeigt.
+In the grandMA3 software settings the OSC prefix has to be set to "gma3" (and of course OSC input has to be enabled).
+You can find more information on the setup process under: https://help2.malighting.com/Page/grandMA3/remote_inputs_osc/en/1.8
 
-Zusätzlich erkennt es jetzt die Kollision des Joystick Rechtecks und einer "Fixture" (Licht, auf dem Bildschirm ebenfalls durch ein Rechteck grafisch dargestellt). Dadurch wird man in Zukunft zuerst eine spezifische Fixture auswählen können um sie dann zu kontrollieren. Ebenfalls kann man nun die Anzahl Fixtures angeben und sie werden auf dem Bildschirm der Reihe nach angereiht mit dem Mittelpunkt in der Mitte des Fensters.
+The Joystick that was used to create this software is the Thrustmaster T.16000M
+https://www.thrustmaster.com/en-gb/products/t-16000m-fcs-hotas/
 
-20.07.24 Das Followspot-System hat jetzt noch ein paar zusätzliche Features erhalten. Neben kleineren Verbesserungen im Skalieren der HUD Elemente mit der Fenstergrösse kann man nun noch zusätzlich die "intensity" (Lichtstärke) und den "zoom" (Lichtwinkel) mithilfe einer "throttle" ansteuern, die beim Kauf des Flightstick-HOTAS mitgeliefert wurde.
+It comes as a Joystick and a Throttle, and the throttle is used to control sensitivity and zoom
+Therefore the system will not work(not even run) if only one Joystick is used.
+Also, the axis are mapped to this specific controller so the control scheme might be unintuitive on other joysticks.
 
-Ebenfalls kann man noch mit einer Achse am Flightstick die Sensitivität der Bewegung einstellen, um sowohl schnelle Bewegungen als auch präzise Korrekturen zu ermöglichen.
+Support for other varieties of joysticks might come later.
 
-Dazu wurde der gesendete Befehl an die Konsole so abgeändert, dass die Befehle, die 60 mal pro Sekunde in die Konsole reinfliessen, sie nicht vollständig Sperren und jegliche Bedienung der Konsole verhindern. Man kann jetzt sogar die gewünschte Fixture über die Konsole auswählen und dann nahtlos ihre Parameter über die Joysticks kontrollieren, wodurch bessere Zusammenarbeit zwischen den zwei LDs (Light Designers) ermöglicht wird.
 
-11.08.24 Dem System wurde nun noch die Möglichkeit gegeben, mit der Betätigung eines Knopfes zwischen dem "Show", "No_Output" und "Edit" Modus zu wechseln. Der Show Modus ist das schon vorhandene System ohne grosse Abänderung. Im No_Ouput Modus werden keine Befehle an die Konsole gesendet, wodurch man die Konsole ohne Störung verwenden kann. Der Edit Modus wird in der Zukunft als Editierfunktion dienen, damit man neue Fixtures im System definieren und ihre Position ändern kann.
+Running the system:
 
-Zusätzlich wurde eine Warnung hinzugefügt, wenn das Licht seine maximale Umdrehung erreicht hat und sich nicht mehr weiter in die vorgegebene Richtung bewegen kann. Zudem wird im Interface die Pan/Tilt Anzeige kontinuierlich rot, wenn eine der Werte in die Nähe dieser Grenze kommt.
+This system is intended to be run on a PC or Laptop that is connected to the grandMA3 Network (preferably by Ethernet).
 
-Ebenfalls gibt es jetzt Funktionen, welche vom Kartesischen in das Sphärische oder vom Sphärischen in das Kartesische Koordinatensystem umwandeln. Beim jetzigen Stand kann man vom Kartesischen in das Sphärische Koordinatensystem nur die Kartesischen Werte eingeben, welche dann umgewandelt werden. In der Zukunft sollte dies jedoch fliessend mit der Bedienung des Joysticks funktionieren sollen.
+To start the software, run the *Run.py* file. A fullscreen window of the user-interface should appear.
 
-16.08.24 Die Transformation funktioniert nun auch noch fliessend mit dem Joystick. Die Position des Lichtes wird auch auf dem Interface grafisch angezeigt und zusätzlich auch die X und Y Werte (je von 0-100, mit 0,0 als unten links auf der Bühne und 100,100 als oben rechts).
-Für die Anzeige auf dem Interface brauchte es noch zusätzlich eine Funktion, welche den Joystick Input auf dem Interface in die nicht intuitiven, scheinbar zufälligen kartesischen Koordinaten umwandelt, um diese dann nachher in das sphärische Koordinatensystem(pan/tilt) zu transformieren.
+Now press the 3rd and 4th button on the main joystick simultaneously (pressing the 2nd will, at the time of writing this, probably crash the software). You should enter a calibration mode and it will tell you to direct the mover to the bottom-left of the stage(from your perspective, not stage-right).
 
-Somit funktioniert dieses System vollständig und der praktische Teil der MA ist fertig. Der Fokus wird nun auf den schriftlichen Kommentar gelegt.
+If you did everything right, you should now be able to control the pan and tilt axes directly with the joystick. Otherwise, there might be something wrong with the grandMA3 or some Network settings.
+
+Everytime you position the light you will have to press trigger(or 1st button) and it will go to the next step.
+Finally, it will tell you that you can leave calibration mode by pressing the 3rd and 4th button again and the stage-corner-coordinates should be stored in a Calibration.txt file. 
+
+Now you can press the 2nd Button of the main Joystick. The showmode should change from *No_Output* to *Show.*
+Since the mover has been calibrated, you should be able to control it on the x- and y-axis and the system will automatically calculate the pan and tilt values.
+
+If you move too closely to the maximum or minimum pan value(-270 or 270) it will automatically reset to a safer number, so the mover will spin around one time.
