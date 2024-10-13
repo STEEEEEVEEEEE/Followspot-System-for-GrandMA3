@@ -3,7 +3,7 @@ from pythonosc import udp_client
 import pyglet
 from pyglet.gl import *
 import math
-
+import ast
 
 
 MA3_IP = "192.168.1.16"  # Replace with your GrandMA3 console's IP address
@@ -263,11 +263,6 @@ def spherical_to_cartesian():
     y = (Math.cosine(pan-offset) * Math.tan(tilt) * z)
     return x, y
 
-#cart_x = -6.963154
-#cart_y = -9.038917
-
-
-
     
 #origin1 = (-5.863388133, -0.72475178)           #the bottom-left corner of the stage
 #max_x = (3.5538304, -0.408089844)               #the bottom-right corner of the stage
@@ -279,6 +274,22 @@ def spherical_to_cartesian():
 #max_x = (2.237131, -3.968535)               #the bottom-right corner of the stage
 #max_y = (-5, -7.8916922)                  #the top-left corner of the stage
 #max_both = (2.62696221, -7.8916922)         #the top-right corner of the stage
+class Transformation():
+    def __init__(self):
+        self.coordinates = []
+
+    def create_coordinates_from_file(self):
+        if self.coordinates == []:
+            with open("Calibration.txt", "r") as file:
+                lines = file.readlines()
+                for line in lines:
+                    line = line.rstrip("\n")
+                    line_tuple = ast.literal_eval(line)
+                    print(line_tuple)
+                    self.coordinates.append(line_tuple)
+        return self.coordinates
+
+transformer = Transformation()
 
 origin1 = (-7.1160833, 5.833910)           #the bottom-left corner of the stage
 max_x = (4.8003327, 4.6627282)               #the bottom-right corner of the stage
@@ -311,11 +322,6 @@ def cartesian_movement(jstk_cart_position):
     cart_x, cart_y = (-jstk_cart_position[0] + window.width/6)/(window.width/151), (-jstk_cart_position[1] + window.height/3)/(window.height/171)
     return jstk_cart_position, cart_x, cart_y
 
-def standard_movement():
-    position = joyaxis_motion()
-    jstk_rect.postion = position[0]
-    jstk_rect.anchor_position = position[0][0] - window.width / 3, position[0][1] - window.height / 1.5
-    jstk_rect.radius = (zoom + 10) * 1.5
 
 def rectangle_movement():
     """Takes the positional value of the cartesian_movement() function and applies it to the pyglet jstk_rectangle shape"""
@@ -377,7 +383,7 @@ def cartesian_to_spherical():
     global cart_pan
     global cart_tilt
     global state
-    cart_x, cart_y = translate_to_quadrilateral(coordinates)
+    cart_x, cart_y = translate_to_quadrilateral(transformer.create_coordinates_from_file())
     z = 4
 
     if state == False:
@@ -550,7 +556,7 @@ class Labels():
         two = f"Please direct the Followspot-Light to the bottom-right and press trigger"
         three = f"Please direct the Followspot-Light to the top-left and press trigger"
         four = f"Please direct the Followspot-Light to the top-right and press trigger"
-        five = "If you wish to confirm, leave calibration mode. If you still want to make readjustments, press trigger"
+        five = "You can now leave calibration mode. If you still want to make readjustments, press trigger"
         six = "Succesfully stored, you can now leave calibration mode"
         location.append([one, two, three, four, five])
         labels.calibration_text.text = location[0][step]

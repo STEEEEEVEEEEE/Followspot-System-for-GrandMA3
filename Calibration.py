@@ -19,24 +19,25 @@ class Calibration:
             self.step = 0
             return 2
 
-    def write_to_file(self, line1, line2, line3, line4):
+    def write_to_file(self, lines):
         with open("Calibration.txt", "w") as file:
-            line1 = line1 + "\n"
-            line2 = line2 + "\n"
-            line3 = line3 + "\n"
-            line4 = line4 + "\n"
-            file.write(line1)
-            file.write(line2)
-            file.write(line3)
-            file.write(line4)
+            for line in lines:
+                line = str(line) + "\n"
+                file.write(line)
 
+        
+    def read_from_file(self):
+        with open("Calibration.txt", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                print(line, end="")
 
     def get_coordinates(self):
         labels.next_step(self.step)
         if self.step == 3 and standarddetector.button_differentiating() == 1:
             self.coordinate.append(str((spherical_to_cartesian())))
-            calibrator.write_to_file(str(self.coordinate[0]), str(self.coordinate[1]), str(self.coordinate[2]), str(self.coordinate[3]))
-            print("hell yeah")
+            calibrator.write_to_file(self.coordinate)
+            calibrator.read_from_file()
             self.step = (self.step + 1) % 5          
 
         if self.step == 4:
