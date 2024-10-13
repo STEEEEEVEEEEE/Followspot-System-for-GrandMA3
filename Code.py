@@ -302,6 +302,7 @@ def cartesian_to_spherical():
     global cart_tilt
     global state
     cart_x, cart_y = translate_to_quadrilateral(transformer.create_coordinates_from_file())
+    cart_x, cart_y = translate_to_quadrilateral(transformer.create_coordinates_from_file())
     z = 4
 
     if state == False:             #checks where the moving head is positioned to adjust the mathematical functions so that it can seamlessly move to 
