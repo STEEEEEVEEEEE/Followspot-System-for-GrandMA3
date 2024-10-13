@@ -10,88 +10,50 @@ MA3_IP = "192.168.1.16"  # Replace with your GrandMA3 console's IP address
 MA3_OSC_PORT = 8000    # OSC port for GrandMA3
 
 
-client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT)
+client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT) #client for OSC messages to work
 
-# Basic OSC message structure
-Fixture = 303
-pan = 0
+pan = 0     #define pan, tilt, sens, zoom and intensity
 tilt = 0
-# Example: Turning on fixture 1
-stick_drift_x = 1.5259021896696368e-05
-stick_drift_y = 1.5259021896696368e-05
-joysticks = pyglet.input.get_joysticks()
+sens = 0
+zoom = 0
+intensity = 0
+
+stick_drift_x = 1.5259021896696368e-05  #stick-drift correction value x, can be changed
+stick_drift_y = 1.5259021896696368e-05  #stick-drift correction value y, can be changed
+joysticks = pyglet.input.get_joysticks()    
 assert joysticks, 'Kein Joystick verbunden'
-joystick1 = joysticks[0]
-joystick2 = joysticks[1]
+joystick1 = joysticks[0]                     #define and
+joystick2 = joysticks[1]                     #setup joysticks 1 and 2
 joystick1.open()
-joystick2.open()
+joystick2.open()                        
 
 
-window = pyglet.window.Window(width = 1000, height = 500)
-window.set_caption("Lightcontroller")
+window = pyglet.window.Window(fullscreen = True) #define window, fullscreen can be changed to width = ... , height = ....
+window.set_caption("Lightcontroller")            #to enable windowed mode with the specified resolution
 
-batch = pyglet.graphics.Batch()
+batch = pyglet.graphics.Batch()                  #setup of "batches" for efficient graphics processing
 label = pyglet.graphics.Batch()
 calibration_batch = pyglet.graphics.Batch()
 selection = pyglet.graphics.Batch()
 control = pyglet.graphics.Batch()
 outofbounds = pyglet.graphics.Batch()
 
-x_middle = window.width // 2
+x_middle = window.width // 2                    #middle of the window values
 y_middle = window.height // 2
 
-stage_origin = window.width//6, window.height//3
+stage_origin = window.width//6, window.height//3        #bottom-left corner of the stage displayed on screen
 background = pyglet.shapes.Rectangle(0,0, window.width, window.height, color=(100,100,100), batch=batch)
-Stage = pyglet.shapes.Rectangle(stage_origin[0],stage_origin[1], window.width//1.5, window.height//1.7, color = (70,70,70), batch=batch)
-stage_middle = Stage.x + Stage.width / 2, Stage.y + Stage.height / 2
+Stage = pyglet.shapes.Rectangle(stage_origin[0],stage_origin[1], window.width//1.5, window.height//1.7, color = (70,70,70), batch=batch) #stage displayed on screen
+stage_middle = Stage.x + Stage.width / 2, Stage.y + Stage.height / 2    #center of the stage displayed on screen
 origin = stage_origin[0], stage_origin[1]
 
-fixture_labels = []
-fixture_shapes = []
-fixtures = 4
-
-jx =  0
+jx =  0     #define joystick x and joystick y variables
 jy = 0
-normalized_z = (-joystick1.z + 1) // 2
+
 jstk_rect = pyglet.shapes.Circle(jx, jy, window.height // 25, color=(255,0,0, 150), batch=batch)
 
-offset = 90
+offset = 90   #offset value if the moving head doesn't align with the stage in its home position
 
-
-
-def create_Fixtures(fixtures):
-    """
-    Creates a certain amount of fixtures
-
-    Args:
-        The amount of fixtures
-    """
-    for i in range(fixtures):
-        size = window.height // 10
-        label = pyglet.text.Label(f"Fixture {i + 1}", x=0 + size // 2, y=0 + size // 2, font_size=window.height // 100, anchor_x='center', batch=batch, color=(0,0,0,150))
-        fixture_labels.append(label)
-        fixture = pyglet.shapes.Rectangle(0, 0, size, size, color=(255, 255, 255), batch=batch)
-        fixture_shapes.append(fixture)
-
-def center_and_distribute_fixtures(rectangles, labels):
-    """Centers and distributes a list of rectangles within a window."""
-    size = window.height // 10
-    num_rects = len(rectangles)
-    total_width = sum(rect.width for rect in rectangles)
-
-    # Calculate spacing between rectangles
-    available_space = window.width - total_width
-    spacing = available_space / (num_rects + 1) if num_rects > 1 else 0
-
-    # Calculate starting x position
-    start_x = (window.width - total_width - spacing * (num_rects - 1)) / 2
-
-    # Position each rectangle
-    for i, rect in enumerate(rectangles):
-        rect.x = start_x + i * (rect.width + spacing)
-        rect.y = window.height // 2.5 - rect.height // 2  # Center vertically
-        labels[i].x = rect.x + size // 2
-        labels[i].y = rect.y + size // 2
 
 def out_of_bounds():
     """
@@ -113,7 +75,7 @@ def out_of_bounds():
         state = False
     elif abs(pan) > 270 or abs (tilt) > 135:
         state = True
-        outofbounds.draw()
+        outofbounds.draw()                  #out_of_bounds message appears if the pan or tilt maximum is exceeded
 
     if 255 > abs(pan) >= 200:
         labels.pan_label.color = (255,-red_pan,-red_pan,255)
@@ -127,42 +89,7 @@ def out_of_bounds():
         labels.tilt_label.color = (255,0,0,255)
     elif abs(tilt) < 80:
         labels.tilt_label.color = (255,255,255,255)
-    return state
-
-def FixtureSelect_Collision(): 
-    """Checks for all fixture rectangles if they are colliding with the jstk_rectangle"""
-    for i in fixture_shapes:
-        collision = check_collision(jstk_rect,i)
-        if collision == True:
-            #print(collision, fixture_shapes[i])
-            pass
-    
-def check_collision(rect1, rect2):
-    """
-    Checks if two pyglet.shapes.Rectangle objects are colliding.
-
-        Args:
-
-        tuple containing position of rect1 and rect2
-
-    Returns:
-        True if they are colliding
-
-        False if they are not colliding
-    """
-
-        # Check for overlap in the x-axis
-    if (-rect1.anchor_position[0] + rect1.width >= rect2.x) and (rect2.x + rect2.width >= -rect1.anchor_position[0]):
-    # Check for overlap in the y-axis
-        if (-rect1.anchor_position[1] + rect1.height >= rect2.y) and (rect2.y + rect2.height >= -rect1.anchor_position[1]):
-            #print("Collision")
-            return True
-        else:
-            #print("None")
-            return False
-    else:
-        #print("None")
-        return False
+    return state        #state is used in the Run.py file to control OSC output
 
 def light_parameters():
     """
@@ -175,13 +102,11 @@ def light_parameters():
 
     the final parameters "intensity" and "zoom" are assigned as global
     """
-    global intensity
+    global intensity    #intensity is not used right now, will add possibility to change between sensitivity and intensity on the joytick axis in the future
     global zoom
-    #normalized_rq = (-joystick2.rq + 1) / 2
     normalized_z = (joystick2.z + 1) / 2
     #intensity = normalized_rq * 100
-    zoom = (normalized_z * 57.5) + 2.5
-
+    zoom = (normalized_z * 57.5) + 2.5   #multiplicator and + 2.5 is so that minimum zoom is 2 and maximum zoom is 60
 
 def joyaxis_motion():
     """
@@ -202,8 +127,8 @@ def joyaxis_motion():
     global sens
     global jx
     global jy
-    normalized_rq = (-joystick2.rq + 1.2) / 10
-    sens = normalized_rq
+    normalized_rq = (-joystick2.rq + 1.2) / 10   
+    sens = normalized_rq            #rq axis on the joystick to control the sensitivity
     
     if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
         jx = jx - (joystick1.x * sens + stick_drift_x)
@@ -234,14 +159,10 @@ def send_OSC():
     tilt = -jy * 0.7
 
 
-    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
-    client.send_message("/gma3/cmd", f'At {pan} Attribute "Pan"')
-    client.send_message("/gma3/cmd", f'At {tilt} Attribute "Tilt"')
+    client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')     #This OSC message structure is tailored specifically for grandMA3 consoles.
+    client.send_message("/gma3/cmd", f'At {pan} Attribute "Pan"')       #it can be changed to control other consoles, but send_cartesian_OSC function will also have to be changed.
+    client.send_message("/gma3/cmd", f'At {tilt} Attribute "Tilt"')     #it is essential that in the OSC settings of the grandMA3 the "prefix" is labeled "gma3"
 
-
-intensity = 0
-zoom = 0
-sens = 0
 
 def spherical_to_cartesian():
     """
@@ -256,47 +177,44 @@ def spherical_to_cartesian():
     Returns:
         x and y in the cartesian coordinate system
     """
+
     global x
     global y
     z = 4
-    x = (Math.sine(pan-offset) * Math.tan(tilt) * z)
+    x = (Math.sine(pan-offset) * Math.tan(tilt) * z)      
     y = (Math.cosine(pan-offset) * Math.tan(tilt) * z)
     return x, y
 
-    
-#origin1 = (-5.863388133, -0.72475178)           #the bottom-left corner of the stage
-#max_x = (3.5538304, -0.408089844)               #the bottom-right corner of the stage
-#max_y = (-6.963154, -9.038917)                  #the top-left corner of the stage
-#max_both = (4.398541132, -8.0420626908)         #the top-right corner of the stage
 
-
-#origin1 = (-4.89478, -3.77743)           #the bottom-left corner of the stage
-#max_x = (2.237131, -3.968535)               #the bottom-right corner of the stage
-#max_y = (-5, -7.8916922)                  #the top-left corner of the stage
-#max_both = (2.62696221, -7.8916922)         #the top-right corner of the stage
 class Transformation():
+    """
+    Class for the entire Transformation from cartesian to spherical. 
+    Used for running multiple instances and being able to control multiple calibrated lights at once.(not implemented yet)
+    """
     def __init__(self):
         self.coordinates = []
 
     def create_coordinates_from_file(self):
+        """
+        Takes the content of the Calibration.txt file and converts it to a list of the 4 stage-corner coordinates.
+
+        Input(no arguments):
+            Calibration.txt file
+        
+        Returns:
+            self.coordinates list
+        """
         if self.coordinates == []:
             with open("Calibration.txt", "r") as file:
                 lines = file.readlines()
-                for line in lines:
-                    line = line.rstrip("\n")
-                    line_tuple = ast.literal_eval(line)
+                for line in lines:                          #iterates over lines in .txt file
+                    line = line.rstrip("\n")                #removes newline character from string
+                    line_tuple = ast.literal_eval(line)     #converts string to tuple
                     print(line_tuple)
-                    self.coordinates.append(line_tuple)
+                    self.coordinates.append(line_tuple)    
         return self.coordinates
 
-transformer = Transformation()
-
-origin1 = (-7.1160833, 5.833910)           #the bottom-left corner of the stage
-max_x = (4.8003327, 4.6627282)               #the bottom-right corner of the stage
-max_y = (-5.073917, -3.6413534)                  #the top-left corner of the stage
-max_both = (2.5557522, -2.339679)         #the top-right corner of the stage
-
-coordinates = [origin1, max_x, max_y, max_both]
+transformer = Transformation()      #class instance of Transformation class
 
 def cartesian_movement(jstk_cart_position):
     """
@@ -317,17 +235,17 @@ def cartesian_movement(jstk_cart_position):
     
     cart_joyx, cart_joyy = joyaxis_motion()
     
-    jstk_cart_position = jstk_cart_position[0] + cart_joyx * window.width/175, jstk_cart_position[1] + cart_joyy * window.height / 175
+    jstk_cart_position = jstk_cart_position[0] + cart_joyx * window.width/175, jstk_cart_position[1] + cart_joyy * window.height / 175      
     
-    cart_x, cart_y = (-jstk_cart_position[0] + window.width/6)/(window.width/151), (-jstk_cart_position[1] + window.height/3)/(window.height/171)
-    return jstk_cart_position, cart_x, cart_y
+    cart_x, cart_y = (-jstk_cart_position[0] + window.width/6)/(window.width/151), (-jstk_cart_position[1] + window.height/3)/(window.height/171)  # /bysomething numbers are there so that in the end
+    return jstk_cart_position, cart_x, cart_y                                                                                                      # bottom-left of the stage is 0,0 and top-right 100,100
 
 
 def rectangle_movement():
     """Takes the positional value of the cartesian_movement() function and applies it to the pyglet jstk_rectangle shape"""
     position = cartesian_movement(origin)
     jstk_rect.anchor_position = position[0][0] - window.width / 3, position[0][1] - window.height / 1.5
-    jstk_rect.radius = (zoom + 10) * 1.5
+    jstk_rect.radius = (zoom + 10) * 1.5            #radius scales with zoom
 
 def translate_to_quadrilateral(corners):
     """
@@ -386,8 +304,8 @@ def cartesian_to_spherical():
     cart_x, cart_y = translate_to_quadrilateral(transformer.create_coordinates_from_file())
     z = 4
 
-    if state == False:
-        if cart_y >= 0 and cart_x < 0:
+    if state == False:             #checks where the moving head is positioned to adjust the mathematical functions so that it can seamlessly move to 
+        if cart_y >= 0 and cart_x < 0:              #negative or positive values without weird jumps/inconsistencies
             r = (cart_x**2 + cart_y**2)**0.5
             cart_pan = (((Math.arcsine(cart_x/r))+offset)+180)
             cart_tilt = -(Math.arctan(r/z))
@@ -436,11 +354,8 @@ def send_cartesian_OSC():
     global tilt
     global state
     client.send_message("/gma3/cmd", f'At {zoom} Attribute "Zoom"')
-    #client.send_message("/gma3/cmd", f'At {intensity}')
     if cart_pan < 0:
         state = True
-        client.send_message("/gma3/cmd", f'At {cart_pan} Attribute "Pan"')
-        client.send_message("/gma3/cmd", f'At {cart_tilt} Attribute "Tilt"')
     elif cart_pan >= 0:
         state = False
     client.send_message("/gma3/cmd", f'At {cart_pan} Attribute "Pan"')
@@ -551,18 +466,23 @@ class Labels():
                 batch = outofbounds)
         
     def next_step(self, step):
+        """
+        Label text for the different calibration stages
+        """
         location = []
         one = f"Please direct the Followspot-Light to the bottom-left and press trigger"
         two = f"Please direct the Followspot-Light to the bottom-right and press trigger"
         three = f"Please direct the Followspot-Light to the top-left and press trigger"
         four = f"Please direct the Followspot-Light to the top-right and press trigger"
         five = "You can now leave calibration mode. If you still want to make readjustments, press trigger"
-        six = "Succesfully stored, you can now leave calibration mode"
         location.append([one, two, three, four, five])
         labels.calibration_text.text = location[0][step]
 
 
     def update_labels(self):
+        """
+        Updates labels continuously to show the current values of the different parameters
+        """
         x, y = cartesian_movement(origin)[1], cartesian_movement(origin)[2]
         labels.pan_label.text = f"Pan: {int(pan)}"
         labels.tilt_label.text = f"Tilt: {int(tilt)}"
@@ -607,6 +527,5 @@ class Math():
         sine_angle = math.degrees(rat)
         return sine_angle      
     
-#client.send_message("/gma3/Page1/Fader201",0)
-labels = Labels()
+labels = Labels() #labels instance for the Labels() class
 
