@@ -12,6 +12,8 @@ Standard values are at 192.168.1.16 and Port 8000
 In the grandMA3 software settings the OSC prefix has to be set to "gma3" (and of course OSC input has to be enabled).
 You can find more information on the setup process under: https://help2.malighting.com/Page/grandMA3/remote_inputs_osc/en/1.8
 
+The system can also be used with other consoles that support OSC, but the sent OSC message syntax has to be changed in the send_OSC() and send_cartesian_OSC() functions. Additionally, the setup process will be different.
+
 The Joystick that was used to create this software is the Thrustmaster T.16000M
 https://www.thrustmaster.com/en-gb/products/t-16000m-fcs-hotas/
 
