@@ -75,7 +75,7 @@ class Calibration:
         """
         calibration_batch.draw()
         spherical_to_cartesian()
-        send_OSC()
+        transformer.send_OSC()
         calibrator.get_coordinates()
 
 

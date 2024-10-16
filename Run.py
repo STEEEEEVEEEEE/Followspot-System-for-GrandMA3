@@ -38,12 +38,12 @@ def show_mode():
 
     if showstate == 0:                      #showmode is set to Show(OSC output enabled)
         labels.show_mode_label.text = f"Show"
-        bounds_state = out_of_bounds()
+        bounds_state = transformer.out_of_bounds()
 
         if bounds_state == False:           #out_of_bounds is false
             rectangle_movement()
-            cartesian_to_spherical()
-            send_cartesian_OSC()
+            transformer.cartesian_to_spherical()
+            transformer.send_cartesian_OSC()
             
         elif bounds_state == True:          #out_of_bounds is true
             cartesian_movement(origin)
@@ -62,7 +62,7 @@ def update():
         calibrator.calibration_mode()
         rectangle_movement()
         spherical_to_cartesian()
-        send_OSC()
+        transformer.send_OSC()
     elif calib_cycler_state == 1:
         show_mode()
     
