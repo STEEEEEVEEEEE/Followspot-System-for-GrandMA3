@@ -3,10 +3,11 @@ import pyglet
 from pyglet.gl import *
 from Code import *
 from Calibration import *
+from Labels_Class import *
+from out_of_bounds import *
+from Transformation_Class import *
 
 standarddetector.create_button_instances()      #generally used instance for Buttondetection() class
-
-
 
 class Cycle():
     """Cycle class to enable multiple instances of cycling states"""
@@ -38,10 +39,10 @@ def show_mode():
 
     if showstate == 0:                      #showmode is set to Show(OSC output enabled)
         labels.show_mode_label.text = f"Show"
-        bounds_state = transformer.out_of_bounds()
+        bounds_state = outofboundser.out_of_bounds()[0]
 
         if bounds_state == False:           #out_of_bounds is false
-            rectangle_movement()
+            
             transformer.cartesian_to_spherical()
             transformer.send_cartesian_OSC()
             
@@ -53,34 +54,38 @@ def show_mode():
         rectangle_movement()
 
 
-def update():
+def update(dt):
     """
-    Handles the differentiation between showmode and calibration mode.
+    Handles the differentiation between showmode and calibration mode and is also the main logic function. Is run 30 times per second.
     """
-    calib_cycler_state = calibration_cycler.cycle(calibrator.initialization())  #To be in calibration or not to be in calibration, that is the question
-    if calib_cycler_state == 0:
+
+    update.calib_cycler_state = calibration_cycler.cycle(calibrator.initialization())  #To be in calibration or not to be in calibration, that is the question
+    if update.calib_cycler_state == 0:
         calibrator.calibration_mode()
         rectangle_movement()
-        spherical_to_cartesian()
-        transformer.send_OSC()
-    elif calib_cycler_state == 1:
+    elif update.calib_cycler_state == 1:
         show_mode()
-    
+    light_parameters()
+    labels.update_labels()
+
+update.calib_cycler_state = 1 #safety measure to ensure that the code doesn't crash if the update.calib_cycler_state is called in "ondraw" before the update() function is called
 
 def on_draw(dt):
     """
-    Responsible for drawing the different elements of the user-interface and runs the update() function
-    Is the main function that is run 60 times per second
+    Responsible for drawing the different elements of the user-interface 
+    Is run 60 times per second.
     """
-    light_parameters()
-    labels.update_labels()
-    window.clear()
+
+    window.clear() 
     batch.draw()
     label.draw()
-    update()    
+    if update.calib_cycler_state == 0:
+        calibration_batch.draw()
+     
+    
 
-on_draw(1)
 
 
+pyglet.clock.schedule_interval(update, 1/30.0)
 pyglet.clock.schedule_interval(on_draw, 1/60.0)   #runs the on_draw() function on an interval of 60 hz
 pyglet.app.run()                                  #runs the code

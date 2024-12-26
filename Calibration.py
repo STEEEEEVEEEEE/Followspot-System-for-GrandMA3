@@ -1,6 +1,7 @@
 import pyglet
 from pyglet.gl import *
 from Code import *
+from Labels_Class import *
 
 
 
@@ -15,7 +16,7 @@ class Calibration:
 
     def initialization(self):
         """
-        Handles the joystick input of the 3rd and 4th button on the joystick
+        Handles the joystick input of the 3rd and 4th button on the joystick.
         If both are pressed simultaneously it will return 2 for the Cycler in the Run.py file to be used
 
         Input(no arguments):
@@ -40,7 +41,7 @@ class Calibration:
         Arguments:
             list with 4 tuples (x/y coordinates)
         """
-        with open("Calibration.txt", "w") as file:
+        with open("c:/Users/stefa/OneDrive/Matura Arbeit/Repository Clone/MA/Calibration.txt", "w") as file:
             for line in lines:
                 line = str(line) + "\n"
                 file.write(line)
@@ -58,7 +59,7 @@ class Calibration:
             calibrator.write_to_file(self.coordinate)                            #write the coordinates to the calibration file                                   #
             self.step = (self.step + 1) % 5                                      #show the next label step (confirmation)
 
-        if self.step == 4:                                                       
+
             if standarddetector.button_differentiating() == 1:                   #if already on the confirmation step but trigger is pulled:
                 self.coordinate = []                                             #delete coordinates and start from the beginning
                 self.step = (self.step + 1) % 5
@@ -73,9 +74,9 @@ class Calibration:
         """
         Handles the logic of the calibration mode and runs the necessary functions for calibration to work
         """
-        calibration_batch.draw()
+        
         spherical_to_cartesian()
-        transformer.send_OSC()
+        send_OSC()
         calibrator.get_coordinates()
 
 
