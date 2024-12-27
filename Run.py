@@ -39,7 +39,7 @@ def show_mode():
 
     if showstate == 0:                      #showmode is set to Show(OSC output enabled)
         labels.show_mode_label.text = f"Show"
-        bounds_state = outofboundser.out_of_bounds()[0]
+        bounds_state = outofboundser.out_of_bounds(pan, tilt)[0]
 
         if bounds_state == False:           #out_of_bounds is false
             

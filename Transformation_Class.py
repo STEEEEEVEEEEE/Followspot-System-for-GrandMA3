@@ -15,7 +15,12 @@ class Transformation():
         self.cart_pan = 0
         self.cart_tilt = 0
 
+    def get_cart_pan(self):
+        return self.cart_pan
 
+    def get_cart_tilt(self):
+        return self.cart_tilt
+    
     def create_coordinates_from_file(self):
         """
         Takes the content of the Calibration.txt file and converts it to a list of the 4 stage-corner coordinates.
@@ -94,7 +99,7 @@ class Transformation():
         """
 
         global state
-        state = outofboundser.out_of_bounds()[0]
+        state = outofboundser.out_of_bounds(pan, tilt)[0]
         self.cart_x, self.cart_y = transformer.translate_to_quadrilateral(transformer.create_coordinates_from_file())
         z = 4
 

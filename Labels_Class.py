@@ -1,6 +1,6 @@
 from Code import window, origin, pan, tilt, sens, intensity, cartesian_movement
 from Code import label, control, calibration_batch, batch, outofbounds, x_middle
-
+from Transformation_Class import transformer
 from out_of_bounds import *
 import pyglet
 
@@ -11,7 +11,8 @@ class Labels():
     
     Also contains functions to dynamically change the values of the parameters
     """
-    def __init__(self):
+    def __init__(self, trans_instance):
+        self.trans_instance = trans_instance
 
         self.pan_label = pyglet.text.Label(f"Pan: {pan}", 
                 font_name="Arial",
@@ -114,7 +115,7 @@ class Labels():
         two = f"Please direct the Followspot-Light to the bottom-right and press trigger"
         three = f"Please direct the Followspot-Light to the top-left and press trigger"
         four = f"Please direct the Followspot-Light to the top-right and press trigger"
-        five = "You can now leave calibration mode. If you still want to make readjustments, press trigger"
+        five = "The Coordinates have been saved, you may now exit the calibration mode"
         location.append([one, two, three, four, five])
         labels.calibration_text.text = location[0][step]
 
@@ -124,6 +125,8 @@ class Labels():
         Updates labels continuously to show the current values of the different parameters
         """
         x, y = cartesian_movement(origin)[1], cartesian_movement(origin)[2]
+        pan = self.trans_instance.get_cart_pan()
+        tilt = self.trans_instance.get_cart_tilt()
         labels.pan_label.text = f"Pan: {int(pan)}"
         labels.tilt_label.text = f"Tilt: {int(tilt)}"
         labels.sens_label.text = f"Sens: {int(sens * 495 - 8) }"
@@ -134,13 +137,6 @@ class Labels():
         labels.pan_label.color = outofboundser.pan_label_color
         labels.tilt_label.color = outofboundser.tilt_label_color      
 
-    def update_cart_labels(self):
-        """
-        Updates the cartesian labels in the interface
-        """
-        x, y = cartesian_movement(origin)[1], cartesian_movement(origin)[2]
-        labels.x_label.text = f"X-Position: {int(x)}"
-        labels.y_label.text = f"Y-Position: {int(y)}"
 
 
-labels = Labels() #labels instance for the Labels() class
+labels = Labels(transformer) #labels instance for the Labels() class

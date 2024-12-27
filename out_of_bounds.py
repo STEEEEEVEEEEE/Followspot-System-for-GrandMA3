@@ -8,7 +8,7 @@ class Out_of_bounds():
         self.tilt_label_color = (255,255,255,255)
         self.pan_label_color = (255,255,255,255)
 
-    def out_of_bounds(self):
+    def out_of_bounds(self, pan, tilt):
         """
         Checks if the pan/tilt values are close to or exceeding the maximum rotational angle of the fixture
 
