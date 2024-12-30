@@ -1,3 +1,5 @@
+
+import atexit
 from pythonosc import udp_client
 import pyglet
 from pyglet.gl import *
@@ -6,6 +8,7 @@ from Calibration import *
 from Labels_Class import *
 from out_of_bounds import *
 from Transformation_Class import *
+
 
 standarddetector.create_button_instances()      #generally used instance for Buttondetection() class
 
@@ -35,24 +38,31 @@ def show_mode():
     """
     Handles the different showmode states and hierarchy of the different functions.
     """
-    showstate = showstate_cycler.cycle(standarddetector.button_differentiating())
+    show_mode.showstate = showstate_cycler.cycle(standarddetector.button_differentiating())
 
-    if showstate == 0:                      #showmode is set to Show(OSC output enabled)
+    if show_mode.showstate == 0:                      #showmode is set to Show(OSC output enabled)
         labels.show_mode_label.text = f"Show"
-        bounds_state = outofboundser.out_of_bounds(pan, tilt)[0]
+        for transformation in transmanager.transformations:
+            bounds_state = outofboundser.out_of_bounds(transformation.get_cart_pan(), transformation.get_cart_tilt())[0]
 
-        if bounds_state == False:           #out_of_bounds is false
+            if bounds_state == False:           #out_of_bounds is false
+                
+                transformation.cartesian_to_spherical()
+                
             
-            transformer.cartesian_to_spherical()
-            transformer.send_cartesian_OSC()
-            
-        elif bounds_state == True:          #out_of_bounds is true
-            cartesian_movement(origin)
+            elif bounds_state == True:          #out_of_bounds is true
+                cartesian_movement(origin)
 
-    elif showstate == 1:                    #showmode is set to no-OSC-output
+    elif show_mode.showstate == 1:                    #showmode is set to no-OSC-output
         labels.show_mode_label.text = f"No_Output"
         rectangle_movement()
-
+def cart_osc_send(dt):
+    """
+    Sends the cartesian coordinates to the MA3 software
+    """
+    if show_mode.showstate == 0 and update.calib_cycler_state == 1:  
+        for transformation in transmanager.transformations:
+            transformation.send_cartesian_OSC()
 
 def update(dt):
     """
@@ -67,6 +77,7 @@ def update(dt):
         show_mode()
     light_parameters()
     labels.update_labels()
+    
 
 update.calib_cycler_state = 1 #safety measure to ensure that the code doesn't crash if the update.calib_cycler_state is called in "ondraw" before the update() function is called
 
@@ -84,8 +95,9 @@ def on_draw(dt):
      
     
 
+atexit.register(transmanager.save_state)
 
-
+pyglet.clock.schedule_interval(cart_osc_send, 1/8.0)
 pyglet.clock.schedule_interval(update, 1/30.0)
 pyglet.clock.schedule_interval(on_draw, 1/60.0)   #runs the on_draw() function on an interval of 60 hz
 pyglet.app.run()                                  #runs the code

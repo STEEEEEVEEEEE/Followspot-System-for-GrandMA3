@@ -2,6 +2,10 @@ from Code import *
 from out_of_bounds import *
 from Math_trigonometry import *
 import ast
+import os
+
+
+
 
 
 class Transformation():
@@ -9,13 +13,17 @@ class Transformation():
     Class for the entire Transformation from cartesian to spherical. 
     Used for running multiple instances and being able to control multiple calibrated lights at once.(not implemented yet)
     """
-    def __init__(self):
+    def __init__(self, fixture_id, calibration_file):
         self.coordinates = []
         self.cart_x, self.cart_y = 0, 0
         self.cart_pan = 0
         self.cart_tilt = 0
+        self.fixture_id = fixture_id
+        self.calibration_file = calibration_file
+
 
     def get_cart_pan(self):
+        print(self.cart_pan)
         return self.cart_pan
 
     def get_cart_tilt(self):
@@ -32,13 +40,12 @@ class Transformation():
             self.coordinates list
         """
         if self.coordinates == []:
-            with open('c:/Users/stefa/OneDrive/Matura Arbeit/Repository Clone/MA/Calibration.txt', "r") as file:
+            with open(self.calibration_file, "r") as file:
                 lines = file.readlines()
                 for line in lines:                          #iterates over lines in .txt file
                     line = line.rstrip("\n")                #removes newline character from string
                     line_tuple = ast.literal_eval(line)     #converts string to tuple
                     self.coordinates.append(line_tuple)   
-        print(self.coordinates) 
         return self.coordinates
 
 
@@ -100,7 +107,7 @@ class Transformation():
 
         global state
         state = outofboundser.out_of_bounds(pan, tilt)[0]
-        self.cart_x, self.cart_y = transformer.translate_to_quadrilateral(transformer.create_coordinates_from_file())
+        self.cart_x, self.cart_y = self.translate_to_quadrilateral(self.create_coordinates_from_file())
         z = 4
 
         if state == False:             #checks where the moving head is positioned to adjust the mathematical functions so that it can seamlessly move to 
@@ -152,16 +159,16 @@ class Transformation():
         global pan
         global tilt
         global state
-        client.send_message("/gma3/cmd", f'At {light_parameters.zoom} Attribute "Zoom"')
+        fixture_id = 301
         if self.cart_pan < 0:
             state = True
         elif self.cart_pan >= 0:
             state = False
-        client.send_message("/gma3/cmd", f'At {self.cart_pan} Attribute "Pan"')
-        client.send_message("/gma3/cmd", f'At {self.cart_tilt} Attribute "Tilt"')
+
+        client.send_message("/gma3/cmd", f'Fixture {self.fixture_id} At {self.cart_pan} Attribute "Pan"; At {self.cart_tilt} Attribute "Tilt"; At {light_parameters.zoom} Attribute "Zoom"')
         pan = self.cart_pan
         tilt = self.cart_tilt
 
 
     
-transformer = Transformation()      #class instance of Transformation class
+transformer = Transformation(303,os.path.join('Calibration_files', f'Calibration.txt'))      #class instance of Transformation class

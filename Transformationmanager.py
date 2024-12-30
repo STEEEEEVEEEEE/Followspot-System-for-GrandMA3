@@ -1,3 +1,4 @@
+import os
 import json
 from Transformation_Class import Transformation
 from Labels_Class import Labels
@@ -14,7 +15,12 @@ class TransManager():
         """
         Adds a new transformation instance to the transformation list
         """
-        transformation = Transformation()
+        if len(self.transformations) <= 3:
+            fixture_id = 301 + len(self.transformations)
+        elif len(self.transformations) > 3:
+            fixture_id = 198 + len(self.transformations)
+        calibration_file = os.path.join('Calibration_files', f'Calibration_{len(self.transformations) + 1}.txt')
+        transformation = Transformation(fixture_id, calibration_file)
         self.transformations.append(transformation)
         label = Labels(transformation)
         self.labels.append(label)
@@ -26,7 +32,7 @@ class TransManager():
         """
         Writes the list of 4 stage-corner coordinates to a new Calibration_x.txt file
         """
-        filename = f"Calibration_{len(self.transformations)}.txt"
+        filename = os.path.join('Calibration_files', f'Calibration_{len(self.transformations)}.txt')
         with open(filename, 'w') as file:
             print(lines)
             for line in lines:
@@ -59,7 +65,9 @@ class TransManager():
         state = {
             "transformations": len(self.transformations)
         }
-        with open('state.json', 'w') as file:
+        json_name = os.path.join('Calibration_files','state.json')
+        os.makedirs(os.path.dirname(json_name), exist_ok=True)
+        with open(json_name, 'w') as file:
             json.dump(state, file)
 
     def load_state(self):
@@ -67,7 +75,8 @@ class TransManager():
         Loads the state of the transformations from a JSON file
         """
         try:
-            with open('state.json', 'r') as file:
+            json_name = os.path.join('Calibration_files', 'state.json')
+            with open(json_name, 'r') as file:
                 state = json.load(file)
                 for _ in range(state["transformations"]):
                     self.add_transformation()
