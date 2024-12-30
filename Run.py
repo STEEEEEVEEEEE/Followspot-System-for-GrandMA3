@@ -8,6 +8,7 @@ from Calibration import *
 from Labels_Class import *
 from out_of_bounds import *
 from Transformation_Class import *
+from Logo import *
 
 
 standarddetector.create_button_instances()      #generally used instance for Buttondetection() class
@@ -90,6 +91,7 @@ def on_draw(dt):
     window.clear() 
     batch.draw()
     label.draw()
+    sprite.draw()
     if update.calib_cycler_state == 0:
         calibration_batch.draw()
      
