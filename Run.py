@@ -11,8 +11,8 @@ from Transformation_Class import *
 from Logo import *
 
 
-standarddetector.create_button_instances()      #generally used instance for Buttondetection() class
-
+standarddetector.create_button_instances()      #generally used instance for Buttondetection() class, creates the amount of button instances to be used in the button_differentiating() function
+standarddetector.create_number_instances()      #generally used instance for Buttondetection() class, creates the amount of number instances to be used in the on_key_press() function
 class Cycle():
     """Cycle class to enable multiple instances of cycling states"""
     def __init__(self):
@@ -43,6 +43,7 @@ def show_mode():
 
     if show_mode.showstate == 0:                      #showmode is set to Show(OSC output enabled)
         labels.show_mode_label.text = f"Show"
+        labels.show_mode_label.bold = True
         for transformation in transmanager.transformations:
             bounds_state = outofboundser.out_of_bounds(transformation.get_cart_pan(), transformation.get_cart_tilt())[0]
 
@@ -56,7 +57,9 @@ def show_mode():
 
     elif show_mode.showstate == 1:                    #showmode is set to no-OSC-output
         labels.show_mode_label.text = f"No_Output"
+        labels.show_mode_label.bold = False
         rectangle_movement()
+
 def cart_osc_send(dt):
     """
     Sends the cartesian coordinates to the MA3 software
@@ -94,12 +97,15 @@ def on_draw(dt):
     sprite.draw()
     if update.calib_cycler_state == 0:
         calibration_batch.draw()
+        if calibrator.step == 4:
+            labels.fixture_id_label.text = f"Enter Fixture ID: {calibrator.input_text}"
+            fixture_id_batch.draw()
      
     
 
 atexit.register(transmanager.save_state)
 
 pyglet.clock.schedule_interval(cart_osc_send, 1/8.0)
-pyglet.clock.schedule_interval(update, 1/30.0)
-pyglet.clock.schedule_interval(on_draw, 1/60.0)   #runs the on_draw() function on an interval of 60 hz
+pyglet.clock.schedule_interval(update, 1/60.0)
+pyglet.clock.schedule_interval(on_draw, 1/120.0)   #runs the on_draw() function on an interval of 60 hz
 pyglet.app.run()                                  #runs the code

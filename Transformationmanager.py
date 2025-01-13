@@ -3,24 +3,27 @@ import json
 from Transformation_Class import Transformation
 from Labels_Class import Labels
 from out_of_bounds import Out_of_bounds
+from Code import *
 
 class TransManager():
     def __init__(self):
         self.transformations = [] #list of transformation instances
         self.labels = []    #list of label instances
         self.out_of_bounds_instances = [] #list of out_of_bounds instances
+        self.rectangles = []
+        self.rectangle_labels = []
         self.load_state()
+        self.fixture_rectangle = None
+        self.fixture_label = None
+        
 
-    def add_transformation(self):
+    def add_transformation(self, fixture_id, rectangle):
         """
         Adds a new transformation instance to the transformation list
         """
-        if len(self.transformations) <= 3:
-            fixture_id = 301 + len(self.transformations)
-        elif len(self.transformations) > 3:
-            fixture_id = 198 + len(self.transformations)
-        calibration_file = os.path.join('MA','Calibration_files', f'Calibration_{len(self.transformations) + 1}.txt')
-        transformation = Transformation(fixture_id, calibration_file)
+
+        calibration_file = os.path.join('MA', 'Calibration_files', f'Calibration_{(fixture_id)}.txt')
+        transformation = Transformation(fixture_id, calibration_file, rectangle)
         self.transformations.append(transformation)
         label = Labels(transformation)
         self.labels.append(label)
@@ -28,17 +31,62 @@ class TransManager():
         self.out_of_bounds_instances.append(out_of_bounds_instance)
         self.save_state()
 
-    def create_calibration_file(self, lines):
+
+    def create_calibration_file(self, fixture_id, lines):
         """
-        Writes the list of 4 stage-corner coordinates to a new Calibration_x.txt file
+        Writes the fixture ID and the list of 4 stage-corner coordinates to a new Calibration_x.txt file
         """
-        filename = os.path.join('MA','Calibration_files', f'Calibration_{len(self.transformations)}.txt')
+        filename = os.path.join('MA', 'Calibration_files', f'Calibration_{fixture_id}.txt')
         with open(filename, 'w') as file:
-            print(lines)
             for line in lines:
                 line = str(line) + "\n"
                 file.write(line)
-            # Write initial corner values or other relevant data
+            
+    def add_fixture_rectangle(self, fixture_id):
+        """
+        Adds a fixture rectangle and label to the interface
+        """
+        
+        self.fixture_rectangle = pyglet.shapes.Rectangle(x_middle, y_middle, window.height//12.5, window.height//12.5, color=(85, 85, 85), batch=batch)
+        self.fixture_label = pyglet.text.Label(
+            f"{fixture_id}",
+            font_name="helvetica",
+            font_size=15,
+            x=self.fixture_rectangle.x,
+            y=self.fixture_rectangle.y,
+            anchor_x="left",
+            anchor_y="bottom",
+            batch=batch
+            
+            )
+
+        
+    def position_fixture(self):
+        """
+        Handles the logic of the fixture position input step
+        """
+        if keys[key.RIGHT]:
+            self.fixture_rectangle.x += window.width / 1920
+            self.fixture_label.x = self.fixture_rectangle.x
+        if keys[key.LEFT]:
+            self.fixture_rectangle.x -= window.width / 1920
+            self.fixture_label.x = self.fixture_rectangle.x
+        if keys[key.UP]:
+            self.fixture_rectangle.y += window.height / 1080
+            self.fixture_label.y = self.fixture_rectangle.y
+        if keys[key.DOWN]:
+            self.fixture_rectangle.y -= window.height / 1080
+            self.fixture_label.y = self.fixture_rectangle.y
+
+    def save_fixture_position(self, fixture_id, x, y):
+        f_id = int(fixture_id)
+        self.fixture_rectangle.x = x
+        self.fixture_rectangle.y = y
+        self.fixture_label.x = x
+        self.fixture_label.y = y
+        self.add_transformation(f_id, self.fixture_rectangle)
+        self.rectangles.append(self.fixture_rectangle)
+        self.rectangle_labels.append(self.fixture_label)
 
     def update_all_labels(self):
         """
@@ -58,15 +106,18 @@ class TransManager():
             out_of_bounds_instance.check(pan, tilt)
 
 
+
+
     def save_state(self):
         """
         Saves the state of the transformations to a JSON file
         """
         state = {
-            "transformations": len(self.transformations)
+            "fixture_ids": [transformation.fixture_id for transformation in self.transformations],
+            "positions": [(rectangle.x/window.width, rectangle.y/window.height) for rectangle in self.rectangles]
         }
-        json_name = os.path.join('MA','Calibration_files','state.json')
-        os.makedirs(os.path.dirname(json_name), exist_ok=True)
+        json_name = os.path.join('MA', 'Calibration_files', 'state.json')
+        os.makedirs(os.path.dirname(json_name), exist_ok=True)  # Ensure the directory exists
         with open(json_name, 'w') as file:
             json.dump(state, file)
 
@@ -75,11 +126,12 @@ class TransManager():
         Loads the state of the transformations from a JSON file
         """
         try:
-            json_name = os.path.join('MA','Calibration_files', 'state.json')
+            json_name = os.path.join('MA', 'Calibration_files', 'state.json')
             with open(json_name, 'r') as file:
                 state = json.load(file)
-                for _ in range(state["transformations"]):
-                    self.add_transformation()
+                for fixture_id, position in zip(state["fixture_ids"], state["positions"]):
+                    self.add_fixture_rectangle(fixture_id)
+                    self.save_fixture_position(fixture_id, position[0]*window.width, position[1]*window.height)
         except FileNotFoundError:
             pass
 

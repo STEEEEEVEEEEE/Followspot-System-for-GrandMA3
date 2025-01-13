@@ -2,6 +2,8 @@ from pythonosc import udp_client
 import pyglet
 from pyglet.gl import *
 from Math_trigonometry import *
+from pyglet.window import key
+from pyglet import font
 
 
 MA3_IP = "192.168.1.33"  # Replace with your GrandMA3 console's IP address
@@ -28,6 +30,10 @@ joystick2.open()
 
 window = pyglet.window.Window(fullscreen = True) #define window, fullscreen can be changed to width = ... , height = ....
 window.set_caption("Lightcontroller")            #to enable windowed mode with the specified resolution
+font.add_file('MA/Sprites/helvetica/Helvetica.ttf')  #font for the labels
+helvetica = font.load('Helvetica', 36)                #font size for the labels
+
+
 
 batch = pyglet.graphics.Batch()                  #setup of "batches" for efficient graphics processing
 label = pyglet.graphics.Batch()
@@ -36,6 +42,10 @@ selection = pyglet.graphics.Batch()
 control = pyglet.graphics.Batch()
 outofbounds = pyglet.graphics.Batch()
 input_batch = pyglet.graphics.Batch()
+fixture_id_batch = pyglet.graphics.Batch()
+
+keys = key.KeyStateHandler()
+window.push_handlers(keys)
 
 x_middle = window.width // 2                    #middle of the window values
 y_middle = window.height // 2

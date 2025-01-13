@@ -8,6 +8,8 @@ class Buttondetection:
         self.button_pressed = False
         self.button_type = 0
         self.detectors = []
+        self.numberlist = [key._0, key._1, key._2, key._3, key._4, key._5, key._6, key._7, key._8, key._9]
+        self.numbers = []
 
     def button_press_and_release(self, button):
         """
@@ -55,6 +57,14 @@ class Buttondetection:
             i = Buttondetection()
             self.detectors.append(i)
 
+    def create_number_instances(self):
+        """
+        Assigns the button_press_and_release() function to the different number keys on the keyboard
+        """
+        for i in self.numberlist:
+            i = Buttondetection()
+            self.numbers.append(i)
 
 standarddetector = Buttondetection()
 seconddetector = Buttondetection()
+backspacedetector = Buttondetection()

@@ -13,17 +13,16 @@ class Transformation():
     Class for the entire Transformation from cartesian to spherical. 
     Used for running multiple instances and being able to control multiple calibrated lights at once.(not implemented yet)
     """
-    def __init__(self, fixture_id, calibration_file):
+    def __init__(self, fixture_id, calibration_file, rectangle):
         self.coordinates = []
         self.cart_x, self.cart_y = 0, 0
         self.cart_pan = 0
         self.cart_tilt = 0
         self.fixture_id = fixture_id
         self.calibration_file = calibration_file
-
+        self.fixture_rectangle = rectangle
 
     def get_cart_pan(self):
-        print(self.cart_pan)
         return self.cart_pan
 
     def get_cart_tilt(self):
@@ -44,12 +43,11 @@ class Transformation():
                 lines = file.readlines()
                 for line in lines:                          #iterates over lines in .txt file
                     line = line.rstrip("\n")                #removes newline character from string
+                    
                     line_tuple = ast.literal_eval(line)     #converts string to tuple
                     self.coordinates.append(line_tuple)   
         return self.coordinates
 
-
-                                                                                       # bottom-left of the stage is 0,0 and top-right 100,100
 
 
 
@@ -169,6 +167,5 @@ class Transformation():
         pan = self.cart_pan
         tilt = self.cart_tilt
 
-
-    
-transformer = Transformation(303,os.path.join('Calibration_files', f'Calibration.txt'))      #class instance of Transformation class
+standard_rectangle = pyglet.shapes.Rectangle(0, 0, 0, 0, color=(255, 255, 255), batch=batch)  #rectangle instance for the fixture rectangle
+transformer = Transformation(303,os.path.join('Calibration_files', f'Calibration.txt'),standard_rectangle)      #class instance of Transformation class
