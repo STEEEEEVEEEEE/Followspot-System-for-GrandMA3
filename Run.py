@@ -66,7 +66,8 @@ def cart_osc_send(dt):
     """
     if show_mode.showstate == 0 and update.calib_cycler_state == 1:  
         for transformation in transmanager.transformations:
-            transformation.send_cartesian_OSC()
+            if transformation.selectionstate == True:
+                transformation.send_cartesian_OSC()
 
 def update(dt):
     """
@@ -79,6 +80,7 @@ def update(dt):
         rectangle_movement()
     elif update.calib_cycler_state == 1:
         show_mode()
+        transmanager.on_mouse_press
     light_parameters()
     labels.update_labels()
     
@@ -101,11 +103,14 @@ def on_draw(dt):
             labels.fixture_id_label.text = f"Enter Fixture ID: {calibrator.input_text}"
             fixture_id_batch.draw()
      
-    
+def on_mouse_press(x, y, button, modifiers):
+    transmanager.on_mouse_press(x, y, button, modifiers) 
 
 atexit.register(transmanager.save_state)
 
 pyglet.clock.schedule_interval(cart_osc_send, 1/8.0)
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.clock.schedule_interval(on_draw, 1/120.0)   #runs the on_draw() function on an interval of 60 hz
+
+window.push_handlers(on_mouse_press=on_mouse_press)
 pyglet.app.run()                                  #runs the code

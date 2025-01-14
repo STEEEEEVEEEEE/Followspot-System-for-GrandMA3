@@ -15,6 +15,7 @@ class TransManager():
         self.load_state()
         self.fixture_rectangle = None
         self.fixture_label = None
+        self.selected_rectangles = []
         
 
     def add_transformation(self, fixture_id, rectangle):
@@ -106,7 +107,24 @@ class TransManager():
             out_of_bounds_instance.check(pan, tilt)
 
 
-
+    def on_mouse_press(self, x, y, button, modifiers):
+        """
+        Handles mouse press events to toggle the color of fixture rectangles
+        """
+        for transformation in self.transformations:
+            rectangle = transformation.fixture_rectangle
+            if rectangle.x <= x <= rectangle.x + rectangle.width and rectangle.y <= y <= rectangle.y + rectangle.height:
+                if rectangle in self.selected_rectangles:
+                    # Toggle back to original color
+                    rectangle.color = (85, 85, 85)
+                    self.selected_rectangles.remove(rectangle)
+                    transformation.selectionstate = False
+                else:
+                    # Change to new color
+                    transformation.selectionstate = True
+                    rectangle.color = (83, 104, 120)
+                    self.selected_rectangles.append(rectangle)
+                    
 
     def save_state(self):
         """

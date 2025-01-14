@@ -21,6 +21,7 @@ class Transformation():
         self.fixture_id = fixture_id
         self.calibration_file = calibration_file
         self.fixture_rectangle = rectangle
+        self.selectionstate = False
 
     def get_cart_pan(self):
         return self.cart_pan
@@ -40,10 +41,12 @@ class Transformation():
         """
         if self.coordinates == []:
             with open(self.calibration_file, "r") as file:
+
                 lines = file.readlines()
+                print(self.calibration_file)
                 for line in lines:                          #iterates over lines in .txt file
                     line = line.rstrip("\n")                #removes newline character from string
-                    
+                    print(line)
                     line_tuple = ast.literal_eval(line)     #converts string to tuple
                     self.coordinates.append(line_tuple)   
         return self.coordinates
@@ -71,7 +74,7 @@ class Transformation():
         """
         self.cart_x, self.cart_y = rectangle_movement()[0], rectangle_movement()[1]
         input_x, input_y = self.cart_x, self.cart_y
-        print(corners)
+        
         bl, br, tl, tr = corners
         
         # Interpolate along the bottom and top edges based on input_x

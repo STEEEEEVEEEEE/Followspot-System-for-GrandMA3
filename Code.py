@@ -4,15 +4,14 @@ from pyglet.gl import *
 from Math_trigonometry import *
 from pyglet.window import key
 from pyglet import font
+from pyglet.window import mouse
 
 
 MA3_IP = "192.168.1.33"  # Replace with your GrandMA3 console's IP address
 MA3_OSC_PORT = 8000    # OSC port for GrandMA3
-MA2_IP = "192.168.1.33"
-MA2_OSC_PORT = 9000    # OSC port for GrandMA2
+
 
 client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT) #client for OSC messages to work
-client2 = udp_client.SimpleUDPClient(MA2_IP, MA2_OSC_PORT)
 pan = 0     #define pan, tilt, sens, zoom and intensity
 tilt = 0
 sens = 0
