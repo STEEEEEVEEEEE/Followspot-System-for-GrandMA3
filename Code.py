@@ -5,6 +5,7 @@ from Math_trigonometry import *
 from pyglet.window import key
 from pyglet import font
 from pyglet.window import mouse
+from Control import *
 
 
 MA3_IP = "192.168.1.33"  # Replace with your GrandMA3 console's IP address
@@ -17,14 +18,9 @@ tilt = 0
 sens = 0
 intensity = 0
 
-stick_drift_x = 1.5259021896696368e-05  #stick-drift correction value x, can be changed
-stick_drift_y = 1.5259021896696368e-05  #stick-drift correction value y, can be changed
-joysticks = pyglet.input.get_joysticks()    
-assert joysticks, 'Kein Joystick verbunden'
-joystick1 = joysticks[0]                     #define and
-joystick2 = joysticks[1]                     #setup joysticks 1 and 2
-joystick1.open()
-joystick2.open()                        
+
+                  
+                  
 
 
 window = pyglet.window.Window(fullscreen = True) #define window, fullscreen can be changed to width = ... , height = ....
@@ -43,7 +39,7 @@ outofbounds = pyglet.graphics.Batch()
 input_batch = pyglet.graphics.Batch()
 fixture_id_batch = pyglet.graphics.Batch()
 
-keys = key.KeyStateHandler()
+
 window.push_handlers(keys)
 
 x_middle = window.width // 2                    #middle of the window values
@@ -55,49 +51,11 @@ Stage = pyglet.shapes.Rectangle(stage_origin[0],stage_origin[1], window.width//1
 stage_middle = Stage.x + Stage.width / 2, Stage.y + Stage.height / 2    #center of the stage displayed on screen
 origin = stage_origin[0], stage_origin[1]
 
-jx =  0     #define joystick x and joystick y variables
-jy = 0
-
 jstk_rect = pyglet.shapes.Circle(jx, jy, window.height // 25, color=(255,0,0, 150), batch=batch)
 
 offset = 90   #offset value if the moving head doesn't align with the stage in its home position
 
 coordinates = []
-
-
-def joyaxis_motion():
-    """
-    Takes the input from the joystick1 axes(x, y and z) that output values between -1 and 1 and converts that to 
-    a consistent increase/decrease in the value to then be used by the different ..._movement() functions
-
-    Input:
-        joystick1.x(horizontal movement)
-        joystick1.y(vertical movement)
-        joystick2.rq(sensitivity)
-
-    Returns:
-        jx and jy as converted x and y values that consistently increase/decrease based on joystick input
-
-     """
-    # stick_drift_x and _y serve as correction for stick drift on the joystick.
-    # You can change the values on top where they are defined.
-    global sens
-    global jx
-    global jy
-    normalized_rq = (-joystick2.rq + 1.2) / 10   
-    sens = normalized_rq            #rq axis on the joystick to control the sensitivity
-    
-    if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
-        jx = jx - (joystick1.x * sens + stick_drift_x)
-    else:
-        jx = jx
-
-    if abs(joystick1.y) > 0.1:
-        jy = jy + (joystick1.y * sens + stick_drift_y)
-    else:
-        jy = jy
-    
-    return jx, jy
 
 
 def cartesian_movement(jstk_cart_position):
@@ -117,7 +75,7 @@ def cartesian_movement(jstk_cart_position):
     global cart_x
     global cart_y
     
-    cart_joyx, cart_joyy = joyaxis_motion()
+    cart_joyx, cart_joyy = Control.joyaxis_motion()
     
     jstk_cart_position = jstk_cart_position[0] + cart_joyx * window.width/175, jstk_cart_position[1] + cart_joyy * window.height / 175      
     
@@ -130,7 +88,7 @@ def rectangle_movement():
     """Takes the positional value of the cartesian_movement() function and applies it to the pyglet jstk_rectangle shape"""
     position = cartesian_movement(origin)
     jstk_rect.anchor_position = position[0][0] - window.width / 3, position[0][1] - window.height / 1.5
-    jstk_rect.radius = (light_parameters.zoom + 10) * 1.5            #radius scales with zoom
+    jstk_rect.radius = (light_parameters.zoom + 10) * window.height / 900            #radius scales with zoom
     return position[1], position[2]
 
 
@@ -155,6 +113,8 @@ def spherical_to_cartesian():
     x = (Math_Trigo.sine(pan-offset) * Math_Trigo.tan(tilt) * z)      
     y = (Math_Trigo.cosine(pan-offset) * Math_Trigo.tan(tilt) * z)
     return x, y
+
+
 
 def light_parameters():
     """

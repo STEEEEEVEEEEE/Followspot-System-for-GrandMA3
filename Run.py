@@ -73,7 +73,12 @@ def update(dt):
     """
     Handles the differentiation between showmode and calibration mode and is also the main logic function. Is run 30 times per second.
     """
-
+    if joystick1_sim == True:
+        joystick1.update()
+        joystick2.update()
+    elif joystick2_sim == True:
+        joystick2.update()
+        
     update.calib_cycler_state = calibration_cycler.cycle(calibrator.initialization())  #To be in calibration or not to be in calibration, that is the question
     if update.calib_cycler_state == 0:
         calibrator.calibration_mode()

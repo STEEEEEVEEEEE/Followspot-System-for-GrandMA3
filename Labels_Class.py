@@ -124,7 +124,7 @@ class Labels():
         two = f"Please direct the Followspot-Light to the bottom-right and press trigger"
         three = f"Please direct the Followspot-Light to the top-left and press trigger"
         four = f"Please direct the Followspot-Light to the top-right and press trigger"
-        five = "Now please enter the Patch Address (keyboard input) of the fixture and press trigger"
+        five = "Now please enter the fixture id (keyboard input) of the fixture and press trigger"
         six = "Now please move the fixture (using arrow keys) to where it is rigged and press trigger"
         seven = "The coordinates have been saved, you may now exit the calibration mode"
         location.append([one, two, three, four, five, six, seven])

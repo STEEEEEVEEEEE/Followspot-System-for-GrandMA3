@@ -31,7 +31,7 @@ class Calibration:
         Returns:
             2 (True) if the condition is met
         """
-        if joystick1.buttons[2] == True and joystick1.buttons[3] == True:
+        if joystick1.buttons[2] == True and joystick1.buttons[3] == True and self.step == 0 or self.step == 6:    
             self.calib_state = True
         else:
             self.calib_state = False
