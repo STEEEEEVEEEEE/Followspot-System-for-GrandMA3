@@ -31,10 +31,15 @@ Now press the 3rd and 4th button on the main joystick simultaneously (pressing t
 
 If you did everything right, you should now be able to control the pan and tilt axes directly with the joystick. Otherwise, there might be something wrong with the grandMA3 or some Network settings.
 
-Everytime you position the light you will have to press trigger(or 1st button) and it will go to the next step.
-Finally, it will tell you that you can leave calibration mode by pressing the 3rd and 4th button again and the stage-corner-coordinates should be stored in a Calibration.txt file. Doing the calibration procedure again will create a new calibration file, but the assignment to fixture numbers has not been done yet.
+Everytime you position the light you will have to press trigger(or 1st button) and it will go to the next step. When the four stage-corner-coordinates have been collected, it will ask you to enter the fixture id of the calibrated fixture (the number you put into the console to address that specific light) and in a next step ask you to position the fixture in the interface with the arrow keys. I would recommend to position the fixture where it is rigged relative to the stage, since that allows for a more intuitive understanding of the fixtures to be used in specific scenes. Finally, you can either repeat the entire process for another fixture or leave calibration mode by pressing the 3rd and 4th button again.
+
+Deleting calibrated fixtures has not been added yet.
 
 Now you can press the 2nd Button of the main Joystick. The showmode should change from *No_Output* to *Show.*
+By clicking on a fixture in the interface, it should turn blue and will then control that fixture via OSC.
 Since the mover has been calibrated, you should be able to control it on the x- and y-axis and the system will automatically calculate the pan and tilt values.
-
 If you move too closely to the maximum or minimum pan value(-270 or 270) it will automatically reset to a safer number, so the mover will spin around one time.
+
+Controlling multiple fixtures at once is possible (and very cool), but it can slow down the GrandMA3 Software surprisingly quickly. In my testing, controlling more than 5 fixtures at once makes the GrandMA3 Command Wing practically unusable, even though the strain on the PC is very little. If you discover a fix for this, please contact me.
+
+
