@@ -13,7 +13,7 @@ class Transformation():
     Class for the entire Transformation from cartesian to spherical. 
     Used for running multiple instances and being able to control multiple calibrated lights at once.(not implemented yet)
     """
-    def __init__(self, fixture_id, calibration_file, rectangle):
+    def __init__(self, fixture_id, calibration_file, rectangle, out_of_bounds_instance):
         self.coordinates = []
         self.cart_x, self.cart_y = 0, 0
         self.cart_pan = 0
@@ -22,6 +22,8 @@ class Transformation():
         self.calibration_file = calibration_file
         self.fixture_rectangle = rectangle
         self.selectionstate = False
+        self.state = False
+        self.out_of_bounds_instance = out_of_bounds_instance
 
     def get_cart_pan(self):
         
@@ -92,7 +94,7 @@ class Transformation():
         return final_x, final_y
 
 
-    state = False
+
     overflow = False
 
     def cartesian_to_spherical(self):
@@ -109,11 +111,11 @@ class Transformation():
         """
 
         global state
-        state = outofboundser.out_of_bounds(pan, tilt)[0]
+        self.state = self.out_of_bounds_instance.out_of_bounds(self.cart_pan, self.cart_tilt)[0]
         self.cart_x, self.cart_y = self.translate_to_quadrilateral(self.create_coordinates_from_file())
         z = 4
 
-        if state == False:             #checks where the moving head is positioned to adjust the mathematical functions so that it can seamlessly move to 
+        if self.state == False:             #checks where the moving head is positioned to adjust the mathematical functions so that it can seamlessly move to 
             if self.cart_y >= 0 and self.cart_x < 0:              #negative or positive values without weird jumps/inconsistencies
                 r = (self.cart_x**2 + self.cart_y**2)**0.5
                 self.cart_pan = (((Math_Trigo.arcsine(self.cart_x/r))+offset)+180)
@@ -130,7 +132,7 @@ class Transformation():
                 r = -((self.cart_x**2 + self.cart_y**2)**0.5)
                 self.cart_pan = -((Math_Trigo.arcsine(self.cart_x/r))+offset)
                 self.cart_tilt = (Math_Trigo.arctan(r/z))
-        elif state == True:
+        elif self.state == True:
             if self.cart_y >= 0 and self.cart_x < 0:
                 r = (self.cart_x**2 + self.cart_y**2)**0.5
                 self.cart_pan = (((Math_Trigo.arcsine(self.cart_x/r))+offset)-180)
@@ -173,4 +175,4 @@ class Transformation():
         tilt = self.cart_tilt
 
 standard_rectangle = pyglet.shapes.Rectangle(0, 0, 0, 0, color=(255, 255, 255), batch=batch)  #rectangle instance for the fixture rectangle
-transformer = Transformation(303,os.path.join('Calibration_files', f'Calibration.txt'),standard_rectangle)      #class instance of Transformation class
+transformer = Transformation(303,os.path.join('Calibration_files', f'Calibration.txt'),standard_rectangle, outofboundser)      #class instance of Transformation class

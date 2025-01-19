@@ -2,7 +2,7 @@ import os
 import json
 from Transformation_Class import Transformation
 from Labels_Class import Labels
-from out_of_bounds import Out_of_bounds
+from out_of_bounds import *
 from Code import *
 
 class TransManager():
@@ -24,10 +24,15 @@ class TransManager():
         """
 
         calibration_file = os.path.join('Calibration_files', f'Calibration_{(fixture_id)}.txt')
-        transformation = Transformation(fixture_id, calibration_file, rectangle)
+        out_of_bounds_instance = Out_of_bounds()
+        self.out_of_bounds_instances.append(out_of_bounds_instance)
+
+        transformation = Transformation(fixture_id, calibration_file, rectangle, out_of_bounds_instance)
         self.transformations.append(transformation)
 
-        label = Labels(transformation)
+
+
+        label = Labels(transformation, out_of_bounds_instance)
         label.pan_label.x = x
         label.pan_label.y = y
         label.pan_label.font_size = window.height // 60
@@ -36,9 +41,8 @@ class TransManager():
         label.tilt_label.font_size = window.height // 60
         self.labels.append(label)
 
-        out_of_bounds_instance = Out_of_bounds()
-        self.out_of_bounds_instances.append(out_of_bounds_instance)
-        
+
+
         self.save_state()
 
 
@@ -110,11 +114,8 @@ class TransManager():
         """
         Calls the out_of_bounds() function of the Out_of_bounds() Class for all out_of_bounds instances
         """
-        for i, transformation in enumerate(self.transformations):
-            pan = transformation.get_cart_pan()
-            tilt = transformation.get_cart_tilt()
-            out_of_bounds_instance = self.out_of_bounds_instances[i]
-            out_of_bounds_instance.check(pan, tilt)
+        for out_of_bounds_instance in self.out_of_bounds_instances:
+            out_of_bounds_instance.out_of_bounds()
 
 
     def on_mouse_press(self, x, y, button, modifiers):

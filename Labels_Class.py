@@ -12,9 +12,9 @@ class Labels():
     
     Also contains functions to dynamically change the values of the parameters
     """
-    def __init__(self, trans_instance):
+    def __init__(self, trans_instance, out_of_bounds_instance):
         self.trans_instance = trans_instance
-
+        self.out_of_bounds_instance = out_of_bounds_instance
         self.pan_label = pyglet.text.Label(f"Pan: {self.trans_instance.get_cart_pan()}", 
                 font_name="helvetica",
                 font_size= window.height // 40,
@@ -147,10 +147,10 @@ class Labels():
         labels.zoom_label.text = f"Zoom: {int(light_parameters.zoom)}"
         labels.x_label.text = f"X-Position: {int(x)}"
         labels.y_label.text = f"Y-Position: {int(y)}"
-        self.pan_label.color = outofboundser.pan_label_color
-        self.tilt_label.color = outofboundser.tilt_label_color     
+        self.pan_label.color = self.out_of_bounds_instance.out_of_bounds(new_pan, new_tilt)[1] 
+        self.tilt_label.color = self.out_of_bounds_instance.out_of_bounds(new_pan, new_tilt)[2]
         
 
 
 
-labels = Labels(transformer) #labels instance for the Labels() class
+labels = Labels(transformer, outofboundser) #labels instance for the Labels() class

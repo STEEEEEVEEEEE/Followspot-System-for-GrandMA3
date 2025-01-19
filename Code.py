@@ -24,7 +24,7 @@ intensity = 0
                   
 
 
-window = pyglet.window.Window(width = 1920, height = 1080) #define window, fullscreen can be changed to width = ... , height = ....
+window = pyglet.window.Window(fullscreen = True) #define window, fullscreen can be changed to width = ... , height = ....
 window.set_caption("Lightcontroller")            #to enable windowed mode with the specified resolution
 font.add_file(os.path.join('Sprites', 'helvetica', 'Helvetica.ttf'))  #font for the labels
 helvetica = font.load('Helvetica', 36)                #font size for the labels
