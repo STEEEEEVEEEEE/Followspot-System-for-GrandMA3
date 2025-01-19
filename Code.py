@@ -17,13 +17,9 @@ client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT) #client for OSC messag
 pan = 0     #define pan, tilt, sens, zoom and intensity
 tilt = 0
 
-intensity = 0
-
-
+intensity = 0                
                   
                   
-
-
 window = pyglet.window.Window(fullscreen = True) #define window, fullscreen can be changed to width = ... , height = ....
 window.set_caption("Lightcontroller")            #to enable windowed mode with the specified resolution
 font.add_file(os.path.join('Sprites', 'helvetica', 'Helvetica.ttf'))  #font for the labels

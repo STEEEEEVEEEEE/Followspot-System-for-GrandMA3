@@ -70,8 +70,6 @@ class Calibration:
             if standarddetector.button_differentiating() == 1:                   #usually: on trigger pull, change to next step and store coordinates
                 self.coordinate.append(str((spherical_to_cartesian())))
                 self.step = (self.step + 1) % 7
-    
-
 
 
     def on_key_press(self):
@@ -82,8 +80,6 @@ class Calibration:
                     self.input_text += str(k)
             if backspacedetector.button_press_and_release(keys[key.BACKSPACE]) == True:
                 self.input_text = self.input_text[:-1]
-            
-
 
     def calibration_mode(self):
         """

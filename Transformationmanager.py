@@ -30,8 +30,6 @@ class TransManager():
         transformation = Transformation(fixture_id, calibration_file, rectangle, out_of_bounds_instance)
         self.transformations.append(transformation)
 
-
-
         label = Labels(transformation, out_of_bounds_instance)
         label.pan_label.x = x
         label.pan_label.y = y
@@ -40,9 +38,7 @@ class TransManager():
         label.tilt_label.y = y - window.height // 50
         label.tilt_label.font_size = window.height // 60
         self.labels.append(label)
-
-
-
+        
         self.save_state()
 
 
