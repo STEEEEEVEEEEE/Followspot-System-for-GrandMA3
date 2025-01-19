@@ -24,9 +24,11 @@ class Transformation():
         self.selectionstate = False
 
     def get_cart_pan(self):
+        
         return self.cart_pan
 
     def get_cart_tilt(self):
+        
         return self.cart_tilt
     
     def create_coordinates_from_file(self):
@@ -43,10 +45,10 @@ class Transformation():
             with open(self.calibration_file, "r") as file:
 
                 lines = file.readlines()
-                print(self.calibration_file)
+                
                 for line in lines:                          #iterates over lines in .txt file
                     line = line.rstrip("\n")                #removes newline character from string
-                    print(line)
+                    
                     line_tuple = ast.literal_eval(line)     #converts string to tuple
                     self.coordinates.append(line_tuple)   
         return self.coordinates

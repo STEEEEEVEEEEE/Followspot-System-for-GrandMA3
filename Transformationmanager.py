@@ -18,18 +18,27 @@ class TransManager():
         self.selected_rectangles = []
         
 
-    def add_transformation(self, fixture_id, rectangle):
+    def add_transformation(self, fixture_id, rectangle, x, y):
         """
         Adds a new transformation instance to the transformation list
         """
 
-        calibration_file = os.path.join('MA', 'Calibration_files', f'Calibration_{(fixture_id)}.txt')
+        calibration_file = os.path.join('Calibration_files', f'Calibration_{(fixture_id)}.txt')
         transformation = Transformation(fixture_id, calibration_file, rectangle)
         self.transformations.append(transformation)
+
         label = Labels(transformation)
+        label.pan_label.x = x
+        label.pan_label.y = y
+        label.pan_label.font_size = window.height // 60
+        label.tilt_label.x = x
+        label.tilt_label.y = y - window.height // 50
+        label.tilt_label.font_size = window.height // 60
         self.labels.append(label)
+
         out_of_bounds_instance = Out_of_bounds()
         self.out_of_bounds_instances.append(out_of_bounds_instance)
+        
         self.save_state()
 
 
@@ -37,7 +46,7 @@ class TransManager():
         """
         Writes the fixture ID and the list of 4 stage-corner coordinates to a new Calibration_x.txt file
         """
-        filename = os.path.join('MA', 'Calibration_files', f'Calibration_{fixture_id}.txt')
+        filename = os.path.join('Calibration_files', f'Calibration_{fixture_id}.txt')
         with open(filename, 'w') as file:
             for line in lines:
                 line = str(line) + "\n"
@@ -52,7 +61,8 @@ class TransManager():
         self.fixture_label = pyglet.text.Label(
             f"{fixture_id}",
             font_name="helvetica",
-            font_size=15,
+            font_size=window.height // 45,
+            bold = True,
             x=self.fixture_rectangle.x,
             y=self.fixture_rectangle.y,
             anchor_x="left",
@@ -85,7 +95,7 @@ class TransManager():
         self.fixture_rectangle.y = y
         self.fixture_label.x = x
         self.fixture_label.y = y
-        self.add_transformation(f_id, self.fixture_rectangle)
+        self.add_transformation(f_id, self.fixture_rectangle, x, y)
         self.rectangles.append(self.fixture_rectangle)
         self.rectangle_labels.append(self.fixture_label)
 
@@ -122,7 +132,7 @@ class TransManager():
                 else:
                     # Change to new color
                     transformation.selectionstate = True
-                    rectangle.color = (83, 104, 120)
+                    rectangle.color = (35, 50, 80)
                     self.selected_rectangles.append(rectangle)
                     
 
@@ -134,7 +144,7 @@ class TransManager():
             "fixture_ids": [transformation.fixture_id for transformation in self.transformations],
             "positions": [(rectangle.x/window.width, rectangle.y/window.height) for rectangle in self.rectangles]
         }
-        json_name = os.path.join('MA', 'Calibration_files', 'state.json')
+        json_name = os.path.join('Calibration_files', 'state.json')
         os.makedirs(os.path.dirname(json_name), exist_ok=True)  # Ensure the directory exists
         with open(json_name, 'w') as file:
             json.dump(state, file)
@@ -144,7 +154,7 @@ class TransManager():
         Loads the state of the transformations from a JSON file
         """
         try:
-            json_name = os.path.join('MA', 'Calibration_files', 'state.json')
+            json_name = os.path.join('Calibration_files', 'state.json')
             with open(json_name, 'r') as file:
                 state = json.load(file)
                 for fixture_id, position in zip(state["fixture_ids"], state["positions"]):

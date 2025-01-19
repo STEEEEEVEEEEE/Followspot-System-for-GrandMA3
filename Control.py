@@ -7,8 +7,10 @@ joysticks = pyglet.input.get_joysticks()
 keys = key.KeyStateHandler()  #define keys as the keyStateHandler
 jx =  0     #define joystick x and joystick y variables
 jy = 0
+sens = 0
 joystick1_sim = False
 joystick2_sim = False
+
 
 def clamp(value, min_value, max_value):
     """
@@ -69,23 +71,24 @@ class Control:
         """
         # stick_drift_x and _y serve as correction for stick drift on the joystick.
         # You can change the values on top where they are defined.
-        global sens
         global jx
         global jy
         normalized_rq = (-joystick2.rq + 1.2) / 10   
-        sens = normalized_rq            #rq axis on the joystick to control the sensitivity
+        Control.joyaxis_motion.sens = normalized_rq            #rq axis on the joystick to control the sensitivity
         
-        if abs(joystick1.x) > 0.1: #easier to control since it is less sensitive to small user inconsistencies 
-            jx = jx - (joystick1.x * sens + stick_drift_x)
+        if abs(joystick1.x) > 0.08: #easier to control since it is less sensitive to small user inconsistencies 
+            jx = jx - (joystick1.x * Control.joyaxis_motion.sens * 0.7 + stick_drift_x)
         else:
             jx = jx
 
-        if abs(joystick1.y) > 0.1:
-            jy = jy + (joystick1.y * sens + stick_drift_y)
+        if abs(joystick1.y) > 0.08:
+            jy = jy + (joystick1.y * Control.joyaxis_motion.sens * 0.7 + stick_drift_y)
         else:
             jy = jy
         
         return jx, jy
+    
+Control.joyaxis_motion.sens = 0
 class Joystick1:
     def __init__(self):
         self.x = 0
@@ -95,15 +98,8 @@ class Joystick1:
     def open(self):
         pass
     def update(self):
-        multiplier = 1
-        if keys[key.LSHIFT]:
-            multiplier = 2
-        elif keys[key.LCTRL]:
-            multiplier = 0.3
-        if keys[key.LALT] and keys[key.LCTRL]:
-            multiplier = 0.11
-        self.x = (-1 if keys[key.A] else 1 if keys[key.D] else 0) * multiplier
-        self.y = (-1 if keys[key.W] else 1 if keys[key.S] else 0) * multiplier
+        self.x = (-1 if keys[key.A] else 1 if keys[key.D] else 0) 
+        self.y = (-1 if keys[key.W] else 1 if keys[key.S] else 0) 
         self.buttons[0] = keys[key.ENTER]
         self.buttons[1] = keys[key._1]
         self.buttons[2] = keys[key._2]
@@ -121,7 +117,21 @@ class Joystick2:
         self.z = 0
 
     def update(self):
-        self.z += 0.03 if keys[key.UP] else -0.03 if keys[key.DOWN] else 0
+        
+        if keys[key.LSHIFT]:
+            if keys[key.LALT]:
+                self.rq = -1
+            else:
+                self.rq = -0.5
+
+        elif keys[key.LCTRL]:
+            if keys[key.LALT]:
+                self.rq = 0.9
+            else:
+                self.rq = 0.5
+        else:
+            self.rq = 0
+        self.z += 0.03 if keys[key.RSHIFT] else -0.03 if keys[key.RCTRL] else 0
         self.z = clamp(self.z, -1, 1)
 
 try:

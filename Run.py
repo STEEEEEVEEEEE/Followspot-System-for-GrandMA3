@@ -88,6 +88,7 @@ def update(dt):
         transmanager.on_mouse_press
     light_parameters()
     labels.update_labels()
+    transmanager.update_all_labels()
     
 
 update.calib_cycler_state = 1 #safety measure to ensure that the code doesn't crash if the update.calib_cycler_state is called in "ondraw" before the update() function is called

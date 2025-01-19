@@ -1,5 +1,6 @@
 from Code import window, origin, pan, tilt, sens, intensity, cartesian_movement
 from Code import label, control, calibration_batch, batch, outofbounds, x_middle
+from Code import *
 from Transformation_Class import transformer
 from out_of_bounds import *
 import pyglet
@@ -14,7 +15,7 @@ class Labels():
     def __init__(self, trans_instance):
         self.trans_instance = trans_instance
 
-        self.pan_label = pyglet.text.Label(f"Pan: {pan}", 
+        self.pan_label = pyglet.text.Label(f"Pan: {self.trans_instance.get_cart_pan()}", 
                 font_name="helvetica",
                 font_size= window.height // 40,
                 x= window.height // 50, 
@@ -23,7 +24,7 @@ class Labels():
                 anchor_y="top",
                 batch = label)
 
-        self.tilt_label = pyglet.text.Label(f"Tilt: {tilt}", 
+        self.tilt_label = pyglet.text.Label(f"Tilt: {self.trans_instance.get_cart_tilt()}", 
                 font_name="helvetica",
                 font_size= window.height // 40,
                 x= window.height // 50, 
@@ -32,7 +33,7 @@ class Labels():
                 anchor_y="top",
                 batch = label)
 
-        self.sens_label = pyglet.text.Label(f"Sens: {sens}", 
+        self.sens_label = pyglet.text.Label(f"Sens:", 
                 font_name="helvetica",
                 font_size= window.height // 40,
                 x= window.height // 50, 
@@ -50,7 +51,7 @@ class Labels():
                 anchor_y="top",
                 batch = label)"""
 
-        self.zoom_label = pyglet.text.Label(f"Zoom: {light_parameters.zoom}", 
+        self.zoom_label = pyglet.text.Label(f"Zoom:", 
                 font_name="helvetica",
                 font_size= window.height // 40,
                 x= window.height // 50, 
@@ -136,17 +137,18 @@ class Labels():
         Updates labels continuously to show the current values of the different parameters
         """
         x, y = cartesian_movement(origin)[1], cartesian_movement(origin)[2]
-        pan = self.trans_instance.get_cart_pan()
-        tilt = self.trans_instance.get_cart_tilt()
-        labels.pan_label.text = f"Pan: {int(pan)}"
-        labels.tilt_label.text = f"Tilt: {int(tilt)}"
-        labels.sens_label.text = f"Sens: {int(sens * 495 - 8) }"
+        new_pan = self.trans_instance.get_cart_pan()
+        new_tilt = self.trans_instance.get_cart_tilt()
+        self.pan_label.text = f"Pan: {int(new_pan)}"
+        self.tilt_label.text = f"Tilt: {int(new_tilt)}"
+        print(Control.joyaxis_motion.sens)
+        labels.sens_label.text = f"Sens: {int(Control.joyaxis_motion.sens * 495 - 8) }"
         """labels.intens_label.text = f"Intens: {int(intensity)}"""
         labels.zoom_label.text = f"Zoom: {int(light_parameters.zoom)}"
         labels.x_label.text = f"X-Position: {int(x)}"
         labels.y_label.text = f"Y-Position: {int(y)}"
-        labels.pan_label.color = outofboundser.pan_label_color
-        labels.tilt_label.color = outofboundser.tilt_label_color     
+        self.pan_label.color = outofboundser.pan_label_color
+        self.tilt_label.color = outofboundser.tilt_label_color     
         
 
 

@@ -6,6 +6,7 @@ from pyglet.window import key
 from pyglet import font
 from pyglet.window import mouse
 from Control import *
+import os
 
 
 MA3_IP = "192.168.1.33"  # Replace with your GrandMA3 console's IP address
@@ -15,7 +16,7 @@ MA3_OSC_PORT = 8000    # OSC port for GrandMA3
 client = udp_client.SimpleUDPClient(MA3_IP, MA3_OSC_PORT) #client for OSC messages to work
 pan = 0     #define pan, tilt, sens, zoom and intensity
 tilt = 0
-sens = 0
+
 intensity = 0
 
 
@@ -23,9 +24,9 @@ intensity = 0
                   
 
 
-window = pyglet.window.Window(fullscreen = True) #define window, fullscreen can be changed to width = ... , height = ....
+window = pyglet.window.Window(width = 1920, height = 1080) #define window, fullscreen can be changed to width = ... , height = ....
 window.set_caption("Lightcontroller")            #to enable windowed mode with the specified resolution
-font.add_file('MA/Sprites/helvetica/Helvetica.ttf')  #font for the labels
+font.add_file(os.path.join('Sprites', 'helvetica', 'Helvetica.ttf'))  #font for the labels
 helvetica = font.load('Helvetica', 36)                #font size for the labels
 
 
